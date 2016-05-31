@@ -1,8 +1,5 @@
 package com.mook.locker.javaassist;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.ibatis.javassist.ClassPool;
 import org.apache.ibatis.javassist.CtClass;
 import org.apache.ibatis.javassist.CtMethod;
