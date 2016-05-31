@@ -1,4 +1,4 @@
-package com.mook.locker.misc.domain;
+package com.mook.locker.javaassist;
 
 import java.io.Serializable;
 
