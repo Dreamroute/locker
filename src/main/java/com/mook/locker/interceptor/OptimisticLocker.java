@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.ibatis.binding.MapperMethod;
 import org.apache.ibatis.executor.parameter.ParameterHandler;
 import org.apache.ibatis.executor.statement.StatementHandler;
 import org.apache.ibatis.logging.Log;
@@ -150,6 +151,12 @@ public class OptimisticLocker implements Interceptor {
 			ParameterMapping parameterMapping = mappings.get(mappings.size() - 1);
 			
 			MetaObject pm = configuration.newMetaObject(parameterObject);
+			if(parameterObject instanceof MapperMethod.ParamMap<?>) {
+				MapperMethod.ParamMap<?> paramMap = (MapperMethod.ParamMap<?>) parameterObject;
+				if(!paramMap.containsKey(versionColumn)) {
+					throw new TypeException("基本类型的接口参数必须全部加上MyBatis的@Param标记");
+				}
+			}
 	        Object value = pm.getValue(versionColumn);
 			TypeHandler typeHandler = parameterMapping.getTypeHandler();
 	        JdbcType jdbcType = parameterMapping.getJdbcType();
@@ -187,8 +194,12 @@ public class OptimisticLocker implements Interceptor {
 		} else if(valType == Double.class || valType == double.class) {
 			return (Double) value + 1;
 		} else {
-			throw new  TypeException("Property 'version' in " + parameterObject.getClass().getSimpleName() + 
-					" must be [ long, int, float, double ] or [ Long, Integer, Float, Double ]");
+			if(parameterObject instanceof MapperMethod.ParamMap<?>) {
+				throw new TypeException("基本类型的接口参数必须全部加上MyBatis的@Param标记");
+			} else {
+				throw new  TypeException("Property 'version' in " + parameterObject.getClass().getSimpleName() + 
+						" must be [ long, int, float, double ] or [ Long, Integer, Float, Double ]");
+			}
 		}
 	}
 
