@@ -5,9 +5,9 @@
 
 使用方法：
        1、在配置mybatis配置文件中增加插件：
-       	<plugin interceptor="com.mook.locker.interceptor.OptimisticLocker"><br>
-	       <!-- default is 'version' --><br>
-	       <property name="versionColumn" value="version"/><br>
+       	<plugin interceptor="com.mook.locker.interceptor.OptimisticLocker">
+	       <!-- default is 'version' -->
+	       <property name="versionColumn" value="version"/>
 	</plugin><br>
 	2、说明：<br>
 	       1.默认自增列名称为version，类型可以是int、long、float、double或者他们的包装类型；<br>
