@@ -225,7 +225,7 @@ public class OptimisticLocker implements Interceptor {
 			Class<?> mapper = mapperMap.get(nameSpace);
 			Method m = null;
 			try {
-				m = mapper.getDeclaredMethod("updateUser", paramCls);
+				m = mapper.getDeclaredMethod(id.substring(pos + 1), paramCls);
 			} catch (NoSuchMethodException | SecurityException e) {
 				throw new RuntimeException("系统错误");
 			}
