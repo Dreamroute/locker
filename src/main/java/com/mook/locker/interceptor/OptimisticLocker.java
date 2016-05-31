@@ -51,19 +51,6 @@ import com.mook.locker.annotation.VersionLocker;
 /**
  * <p>MyBatis乐观锁插件<br>
  * 
- * <p>该插件比较适合与mybatis generator或者其他自动化插件整合；<br>
- * 不太适合所有单表CRUD都自己手写的用户<br>
- * 
- * 原理描述：只拦截update方法，改写原生sql，自动递增version。举例：<br>
- * ==>原生SQL：[update user set name = ?, password = ?, version = ? where id = ?]<br>
- * ==>改写之后的SQL：[update user set name = ?, password = ?, version = ? where id = ? and version = ?]<br>
- * <p>
- * 第一个version的值为原始从数据库查询的返回值自增1的结果，第二个version为数据库的值<br>
- * <p>
- * 原则上来说，只要是配置了本插件，所有的update方法都会被拦截并且改写，<br>
- * 如果希望某些update方法不被拦截，那么只需要在该方法对应的接口上面增加注解@VersionLocker(false)<br>
- * <p>数据库的支持，测试只在mysql上做过，不过update属于标准sql，原则上支持所有数据库
- * 
  * @author 342252328@qq.com
  * @date 2016-05-27
  * @version 1.0
