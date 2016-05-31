@@ -91,7 +91,7 @@ public class OptimisticLocker implements Interceptor {
 			}
 			
 			Object originalVersion = hm.getValue("delegate.boundSql.parameterObject.version");
-			Object versionIncr = castTypeAndIncr(originalVersion, hm.getValue("delegate.boundSql.parameterObject"));
+			Object versionIncr = castTypeAndOptValue(originalVersion, hm.getValue("delegate.boundSql.parameterObject"), ValueType.INCREASE);
 			hm.setValue("delegate.boundSql.parameterObject.version", versionIncr);
 			
 			String originalSql = (String) hm.getValue("delegate.boundSql.sql");
@@ -148,7 +148,7 @@ public class OptimisticLocker implements Interceptor {
 	        List<ParameterMapping> parameterMappings = boundSql.getParameterMappings();
 	 		try {
 	 			PreparedStatement ps = (PreparedStatement) invocation.getArgs()[0];
-	 			Object val = castTypeAndDecr(value, parameterObject);
+	 			Object val = castTypeAndOptValue(value, parameterObject, ValueType.DECREASE);
 	 			typeHandler.setParameter(ps, parameterMappings.size() + 1, val, jdbcType);
 	 		} catch (TypeException e) {
 	 			throw new TypeException("Could not set parameters for mapping: " + parameterMappings + ". Cause: " + e, e);
@@ -160,36 +160,16 @@ public class OptimisticLocker implements Interceptor {
 		return invocation.proceed();
 	}
 
-	private Object castTypeAndIncr(Object value, Object parameterObject) {
+	private Object castTypeAndOptValue(Object value, Object parameterObject, ValueType vt) {
 		Class<?> valType = value.getClass();
 		if(valType == Long.class || valType == long.class) {
-			return (Long) value + 1;
+			return (Long) value + vt.value;
 		} else if(valType == Integer.class || valType == int.class) {
-			return (Integer) value + 1;
+			return (Integer) value + vt.value;
 		} else if(valType == Float.class || valType == float.class) {
-			return (Float) value + 1;
+			return (Float) value + vt.value;
 		} else if(valType == Double.class || valType == double.class) {
-			return (Double) value + 1;
-		} else {
-			if(parameterObject instanceof MapperMethod.ParamMap<?>) {
-				throw new TypeException("基本类型的接口参数必须全部加上MyBatis的@Param标记");
-			} else {
-				throw new  TypeException("Property 'version' in " + parameterObject.getClass().getSimpleName() + 
-						" must be [ long, int, float, double ] or [ Long, Integer, Float, Double ]");
-			}
-		}
-	}
-	
-	private Object castTypeAndDecr(Object value, Object parameterObject) {
-		Class<?> valType = value.getClass();
-		if(valType == Long.class || valType == long.class) {
-			return (Long) value - 1;
-		} else if(valType == Integer.class || valType == int.class) {
-			return (Integer) value - 1;
-		} else if(valType == Float.class || valType == float.class) {
-			return (Float) value - 1;
-		} else if(valType == Double.class || valType == double.class) {
-			return (Double) value - 1;
+			return (Double) value + vt.value;
 		} else {
 			if(parameterObject instanceof MapperMethod.ParamMap<?>) {
 				throw new TypeException("基本类型的接口参数必须全部加上MyBatis的@Param标记");
@@ -232,10 +212,10 @@ public class OptimisticLocker implements Interceptor {
 			Method m = null;
 			try {
 				if(null == paramCls) {
-					m = mapper.getDeclaredMethod(id.substring(pos + 1), paramObj.getClass());
-				} else {
-					m = mapper.getDeclaredMethod(id.substring(pos + 1), paramCls);
+					paramCls = new Class<?>[] {paramObj.getClass()};
 				}
+				m = mapper.getDeclaredMethod(id.substring(pos + 1), paramCls);
+				
 			} catch (NoSuchMethodException | SecurityException e) {
 				throw new RuntimeException("系统错误");
 			}
@@ -263,6 +243,16 @@ public class OptimisticLocker implements Interceptor {
 	@Override
 	public void setProperties(Properties properties) {
 		if(null != properties && !properties.isEmpty()) props = properties;
+	}
+	
+	private enum ValueType {
+		INCREASE(1), DECREASE(-1);
+		
+		private Integer value;
+		
+		private ValueType(Integer value) {
+			this.value = value;
+		}
 	}
 
 }
