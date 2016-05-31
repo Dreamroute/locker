@@ -83,7 +83,7 @@ public class OptimisticLocker implements Interceptor {
 	
 	@Override
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public Object intercept(Invocation invocation) throws Throwable {
+	public Object intercept(Invocation invocation) throws Exception {
 		
 		String interceptMethod = invocation.getMethod().getName();
 		String versionColumn = props.getProperty("versionColumn", "version");
@@ -99,22 +99,9 @@ public class OptimisticLocker implements Interceptor {
 				return invocation.proceed();
 			}
 			
-			Map<String, Class<?>> mapperMap = new HashMap<String, Class<?>>();
-			Collection<Class<?>> mappers = ms.getConfiguration().getMapperRegistry().getMappers();
-			if(null != mappers && !mappers.isEmpty()) {
-				for (Class<?> me : mappers) {
-					mapperMap.put(me.getName(), me);
-				}
-			}
-			
-			String id = ms.getId();
-			int pos = id.lastIndexOf(".");
-			String nameSpace = id.substring(0, pos);
-			if(mapperMap.containsKey(nameSpace)) {
-				Class<?> mapper = mapperMap.get(nameSpace);
-				Method m = mapper.getDeclaredMethod("updateUser", Map.class);
-				VersionLocker vl = m.getAnnotation(VersionLocker.class);
-				System.err.println(vl);
+			BoundSql boundSql = (BoundSql) hm.getValue("delegate.boundSql");
+			if(hasVersionLocker(ms, boundSql)) {
+				return invocation.proceed();
 			}
 			
 			String originalSql = (String) hm.getValue("delegate.boundSql.sql");
@@ -146,6 +133,11 @@ public class OptimisticLocker implements Interceptor {
 			
 			Configuration configuration = (Configuration) hm.getValue("configuration");
 			BoundSql boundSql = (BoundSql) hm.getValue("boundSql");
+			
+			if(hasVersionLocker(ms, boundSql)) {
+				return invocation.proceed();
+			}
+			
 			Object parameterObject = boundSql.getParameterObject();
 			List<ParameterMapping> mappings = boundSql.getParameterMappings();
 			ParameterMapping parameterMapping = mappings.get(mappings.size() - 1);
@@ -201,6 +193,53 @@ public class OptimisticLocker implements Interceptor {
 						" must be [ long, int, float, double ] or [ Long, Integer, Float, Double ]");
 			}
 		}
+	}
+	
+	private boolean hasVersionLocker(MappedStatement ms, BoundSql boundSql) {
+		Map<String, Class<?>> mapperMap = new HashMap<String, Class<?>>();
+		Collection<Class<?>> mappers = ms.getConfiguration().getMapperRegistry().getMappers();
+		if(null != mappers && !mappers.isEmpty()) {
+			for (Class<?> me : mappers) {
+				mapperMap.put(me.getName(), me);
+			}
+		}
+		
+		Class<?>[] paramCls = null;
+		
+		Object paramObj = boundSql.getParameterObject();
+		if(paramObj instanceof MapperMethod.ParamMap<?>) {
+			MapperMethod.ParamMap<?> mmp = (MapperMethod.ParamMap<?>) paramObj;
+			if(null != mmp && !mmp.isEmpty()) {
+				paramCls = new Class<?>[mmp.size() / 2];
+				int mmpLen = mmp.size() / 2;
+				for(int i=0; i<mmpLen; i++) {
+					Object index = mmp.get("param" + (i + 1));
+					paramCls[i] = index.getClass();
+				}
+			}
+		}
+		
+		String id = ms.getId();
+		int pos = id.lastIndexOf(".");
+		String nameSpace = id.substring(0, pos);
+		if(mapperMap.containsKey(nameSpace)) {
+			Class<?> mapper = mapperMap.get(nameSpace);
+			Method m = null;
+			try {
+				m = mapper.getDeclaredMethod("updateUser", paramCls);
+			} catch (NoSuchMethodException | SecurityException e) {
+				throw new RuntimeException("系统错误");
+			}
+			VersionLocker vl = m.getAnnotation(VersionLocker.class);
+			if(null != vl && vl.value() == false) {
+				return true;
+			} else {
+				return false;
+			}
+		} else {
+			throw new RuntimeException("配置错误");
+		}
+		
 	}
 
 	@Override
