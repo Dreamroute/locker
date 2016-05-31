@@ -15,6 +15,7 @@
  */
 package com.mook.locker.interceptor;
 
+import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -43,6 +44,8 @@ import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.type.JdbcType;
 import org.apache.ibatis.type.TypeException;
 import org.apache.ibatis.type.TypeHandler;
+
+import com.mook.locker.annotation.VersionLocker;
 
 /**
  * <p>MyBatis乐观锁插件<br>
@@ -108,7 +111,9 @@ public class OptimisticLocker implements Interceptor {
 			String nameSpace = id.substring(0, pos);
 			if(mapperMap.containsKey(nameSpace)) {
 				Class<?> mapper = mapperMap.get(nameSpace);
-				System.err.println(mapper);
+				Method m = mapper.getDeclaredMethod("updateUser", Map.class);
+				VersionLocker vl = m.getAnnotation(VersionLocker.class);
+				System.err.println(vl);
 			}
 			
 			String originalSql = (String) hm.getValue("delegate.boundSql.sql");
@@ -126,8 +131,6 @@ public class OptimisticLocker implements Interceptor {
 			ParameterMapping versionMapping = new ParameterMapping.Builder(configuration, versionColumn, Object.class).build();
 			List<ParameterMapping> paramMappings = (List<ParameterMapping>) hm.getValue("delegate.boundSql.parameterMappings");
 			paramMappings.add(versionMapping);
-			
-			return invocation.proceed();
 			
 		} else if("setParameters".equals(interceptMethod)) {
 			
@@ -167,7 +170,7 @@ public class OptimisticLocker implements Interceptor {
 	 		} catch (SQLException e) {
 	 			throw new TypeException("Could not set parameters for mapping: " + parameterMapping + ". Cause: " + e, e);
 	 		}
-			return invocation.proceed();
+	 		
 		}
 		return invocation.proceed();
 		
@@ -191,7 +194,6 @@ public class OptimisticLocker implements Interceptor {
 
 	@Override
 	public Object plugin(Object target) {
-		
 		if (target instanceof StatementHandler || target instanceof ParameterHandler) {
             return Plugin.wrap(target, this);
         } else {
