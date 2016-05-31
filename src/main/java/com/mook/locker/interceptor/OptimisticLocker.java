@@ -61,8 +61,7 @@ import com.mook.locker.annotation.VersionLocker;
  * 第一个version的值为原始从数据库查询的返回值自增1的结果，第二个version为数据库的值<br>
  * <p>
  * 原则上来说，只要是配置了本插件，所有的update方法都会被拦截并且改写，<br>
- * 如果希望某些update方法不被拦截，那么只需要在该方法对应的接口上面增加注解@NoVersion<br>
- * <p>本插件也只拦截StatementType为prepared的方法，后续在优化其他的
+ * 如果希望某些update方法不被拦截，那么只需要在该方法对应的接口上面增加注解@VersionLocker(false)<br>
  * <p>数据库的支持，测试只在mysql上做过，不过update属于标准sql，原则上支持所有数据库
  * 
  * @author 342252328@qq.com
