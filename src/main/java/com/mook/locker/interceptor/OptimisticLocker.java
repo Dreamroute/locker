@@ -219,7 +219,7 @@ public class OptimisticLocker implements Interceptor {
 				m = mapper.getDeclaredMethod(id.substring(pos + 1), paramCls);
 				
 			} catch (NoSuchMethodException | SecurityException e) {
-				throw new RuntimeException("Map类型的参数错误");
+				throw new RuntimeException("Map类型的参数错误" + e, e);
 			}
 			VersionLocker vl = m.getAnnotation(VersionLocker.class);
 			if(null != vl && vl.value() == false) {
