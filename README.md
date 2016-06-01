@@ -24,7 +24,7 @@
 > 之后：**update user set name = ?, password = ?, version = ? where id = ? and version = ?**
 
 ### 4. 对version的值的说明： ###
-	第一个version的值比第二个的值大1
+	当PreparedStatement将第一个version的值设置之后，插件内部会自动自增1，设置到第二个version上面去。
 
 *作者QQ：342252328*
 
