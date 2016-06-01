@@ -193,12 +193,9 @@ public class OptimisticLocker implements Interceptor {
 		Class<?>[] paramCls = null;
 		Object paramObj = boundSql.getParameterObject();
 		
-		// 处理Map类型参数
-		if(paramObj instanceof Map) {
-			paramCls = new Class<?>[] {Map.class};
-			
-		// 处理@Param标记的参数
-		} else if(paramObj instanceof MapperMethod.ParamMap<?>) {
+		/******************下面处理参数只能按照下面3个的顺序***********************/
+		// 1、处理@Param标记的参数
+		if(paramObj instanceof MapperMethod.ParamMap<?>) {
 			MapperMethod.ParamMap<?> mmp = (MapperMethod.ParamMap<?>) paramObj;
 			if(null != mmp && !mmp.isEmpty()) {
 				paramCls = new Class<?>[mmp.size() / 2];
@@ -209,7 +206,11 @@ public class OptimisticLocker implements Interceptor {
 				}
 			}
 			
-		// 处理POJO实体对象类型的参数
+		// 2、处理Map类型参数
+		} else if (paramObj instanceof Map) {
+			paramCls = new Class<?>[] {Map.class};
+			
+		// 3、处理POJO实体对象类型的参数
 		} else {
 			paramCls = new Class<?>[] {paramObj.getClass()};
 		}
@@ -246,14 +247,18 @@ public class OptimisticLocker implements Interceptor {
 				throw new RuntimeException("Map类型的参数错误" + e, e);
 			}
 			versionLocker = m.getAnnotation(VersionLocker.class);
-//			if(null != versionLocker && versionLocker.value() == false) {
-//				return true;
-//			}
-//			return false;
+			if(null == versionLocker) {
+				try {
+					versionLocker = this.getClass().getDeclaredMethod("versionValue").getAnnotation(VersionLocker.class);
+					versionLockerCache.cacheMethod(vm, versionLocker);
+				} catch (NoSuchMethodException | SecurityException e) {
+					e.printStackTrace();
+				}
+			}
+			return versionLocker;
 		} else {
 			throw new RuntimeException("配置错误");
 		}
-		return null;
 	}
 
 	@Override
@@ -279,5 +284,8 @@ public class OptimisticLocker implements Interceptor {
 			this.value = value;
 		}
 	}
+	
+	@VersionLocker(true)
+	private void versionValue() {}
 
 }
