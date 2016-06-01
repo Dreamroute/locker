@@ -15,17 +15,18 @@
  */
 package com.mook.locker.interceptor;
 
-import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
+import com.mook.locker.annotation.VersionLocker;
+import com.mook.locker.interceptor.cache.LocalVersionLockerCache;
+import com.mook.locker.interceptor.cache.VersionLockerCache;
+import com.mook.locker.interceptor.cache.exception.UncachedMapperException;
 import org.apache.ibatis.binding.MapperMethod;
+import org.apache.ibatis.binding.MapperRegistry;
 import org.apache.ibatis.executor.parameter.ParameterHandler;
 import org.apache.ibatis.executor.statement.StatementHandler;
 import org.apache.ibatis.logging.Log;
@@ -46,8 +47,6 @@ import org.apache.ibatis.type.JdbcType;
 import org.apache.ibatis.type.TypeException;
 import org.apache.ibatis.type.TypeHandler;
 
-import com.mook.locker.annotation.VersionLocker;
-
 /**
  * <p>MyBatis乐观锁插件<br>
  * 
@@ -65,12 +64,14 @@ public class OptimisticLocker implements Interceptor {
 	
 	private static final Log log = LogFactory.getLog(OptimisticLocker.class);
 	
-	Properties props = null;
+	private Properties props = null;
+
+    private VersionLockerCache versionLockerCache = new LocalVersionLockerCache();
 	
 	@Override
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public Object intercept(Invocation invocation) throws Exception {
-		
+
 		String interceptMethod = invocation.getMethod().getName();
 		String versionColumn = props.getProperty("versionColumn", "version");
 		
@@ -93,7 +94,7 @@ public class OptimisticLocker implements Interceptor {
 			Object originalVersion = hm.getValue("delegate.boundSql.parameterObject.version");
 			Object versionIncr = castTypeAndOptValue(originalVersion, hm.getValue("delegate.boundSql.parameterObject"), ValueType.INCREASE);
 			hm.setValue("delegate.boundSql.parameterObject.version", versionIncr);
-			
+
 			String originalSql = (String) hm.getValue("delegate.boundSql.sql");
 			StringBuilder builder = new StringBuilder(originalSql);
 			builder.append(" and ");
@@ -126,9 +127,9 @@ public class OptimisticLocker implements Interceptor {
 			}
 			
 			Object result = invocation.proceed();
-			
+
 			ParameterMapping versionMapping = new ParameterMapping.Builder(configuration, versionColumn, Object.class).build();
-			
+
 			Object parameterObject = boundSql.getParameterObject();
 			
 			MetaObject pm = configuration.newMetaObject(parameterObject);
@@ -150,12 +151,10 @@ public class OptimisticLocker implements Interceptor {
 	 			PreparedStatement ps = (PreparedStatement) invocation.getArgs()[0];
 	 			Object val = castTypeAndOptValue(value, parameterObject, ValueType.DECREASE);
 	 			typeHandler.setParameter(ps, parameterMappings.size() + 1, val, jdbcType);
-	 		} catch (TypeException e) {
-	 			throw new TypeException("Could not set parameters for mapping: " + parameterMappings + ". Cause: " + e, e);
-	 		} catch (SQLException e) {
+	 		} catch (TypeException | SQLException e) {
 	 			throw new TypeException("Could not set parameters for mapping: " + parameterMappings + ". Cause: " + e, e);
 	 		}
-	 		return result;
+			return result;
 		}
 		return invocation.proceed();
 	}
@@ -174,24 +173,21 @@ public class OptimisticLocker implements Interceptor {
 			if(parameterObject instanceof MapperMethod.ParamMap<?>) {
 				throw new TypeException("基本类型的接口参数必须全部加上MyBatis的@Param标记");
 			} else {
-				throw new  TypeException("Property 'version' in " + parameterObject.getClass().getSimpleName() + 
+				throw new  TypeException("Property 'version' in " + parameterObject.getClass().getSimpleName() +
 						" must be [ long, int, float, double ] or [ Long, Integer, Float, Double ]");
 			}
 		}
 	}
-	
+
 	private boolean hasVersionLocker(MappedStatement ms, BoundSql boundSql) {
-		Map<String, Class<?>> mapperMap = new HashMap<String, Class<?>>();
-		Collection<Class<?>> mappers = ms.getConfiguration().getMapperRegistry().getMappers();
-		if(null != mappers && !mappers.isEmpty()) {
-			for (Class<?> me : mappers) {
-				mapperMap.put(me.getName(), me);
-			}
-		}
-		
-		Class<?>[] paramCls = null;
-		
-		Object paramObj = boundSql.getParameterObject();
+		MapperRegistry mapperRegistry = ms.getConfiguration().getMapperRegistry();
+		versionLockerCache.cacheMappers(mapperRegistry);
+
+        Object paramObj = boundSql.getParameterObject();
+        Class<?>[] paramCls = new Class<?>[]{
+                paramObj.getClass()
+        };
+
 		if(paramObj instanceof MapperMethod.ParamMap<?>) {
 			MapperMethod.ParamMap<?> mmp = (MapperMethod.ParamMap<?>) paramObj;
 			if(null != mmp && !mmp.isEmpty()) {
@@ -205,33 +201,18 @@ public class OptimisticLocker implements Interceptor {
 		}
 		
 		String id = ms.getId();
-		int pos = id.lastIndexOf(".");
-		String nameSpace = id.substring(0, pos);
-		if(mapperMap.containsKey(nameSpace)) {
-			Class<?> mapper = mapperMap.get(nameSpace);
-			Method m = null;
-			try {
-				if(null == paramCls) {
-					if(paramObj instanceof Map) {
-						paramCls = new Class<?>[] {Map.class};
-					} else {
-						paramCls = new Class<?>[] {paramObj.getClass()};
-					}
-				}
-				m = mapper.getDeclaredMethod(id.substring(pos + 1), paramCls);
-				
-			} catch (NoSuchMethodException | SecurityException e) {
-				throw new RuntimeException("Map类型的参数错误" + e, e);
-			}
-			VersionLocker vl = m.getAnnotation(VersionLocker.class);
-			if(null != vl && vl.value() == false) {
-				return true;
-			}
-			return false;
-		} else {
-			throw new RuntimeException("配置错误");
+		VersionLocker versionLocker = null;
+		try {
+			versionLocker = versionLockerCache.getAnnotation(id, paramCls);
+		} catch (UncachedMapperException e) {
+			throw new RuntimeException("配置错误", e);
 		}
-		
+		if (null != versionLocker && versionLocker.value() == false) {
+			return true;
+		} else {
+			return false;
+		}
+
 	}
 
 	@Override

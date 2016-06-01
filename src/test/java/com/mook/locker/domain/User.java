@@ -1,4 +1,4 @@
-package com.mook.locker.misc.domain;
+package com.mook.locker.domain;
 
 import java.io.Serializable;
 
@@ -9,6 +9,15 @@ public class User implements Serializable {
 	private Integer id;
 	private String name;
 	private String password;
+	private int version;
+
+	public int getVersion() {
+		return version;
+	}
+
+	public void setVersion(int version) {
+		this.version = version;
+	}
 
 	public Integer getId() {
 		return id;
