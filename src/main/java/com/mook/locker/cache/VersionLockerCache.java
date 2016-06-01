@@ -6,8 +6,8 @@ import com.mook.locker.annotation.VersionLocker;
 
 public interface VersionLockerCache {
 
+	boolean containMethodSinature(VersionLockerCache.MethodSignature vm);
 	void cacheMethod(VersionLockerCache.MethodSignature vm, VersionLocker locker);
-
 	VersionLocker getVersionLocker(VersionLockerCache.MethodSignature vm);
 
 	static class MethodSignature {
