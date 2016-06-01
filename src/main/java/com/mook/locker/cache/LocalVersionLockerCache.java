@@ -16,9 +16,9 @@ public class LocalVersionLockerCache implements VersionLockerCache {
 		ConcurrentHashMap<VersionLockerCache.MethodSignature, VersionLocker> cache = caches.get(nameSpace);
 		if(null == cache || cache.isEmpty()) {
 			cache = new ConcurrentHashMap<>();
-			cache.put(vm, locker);
-			caches.put(nameSpace, cache);
 		}
+		cache.put(vm, locker);
+		caches.put(nameSpace, cache);
 	}
 
 	@Override
