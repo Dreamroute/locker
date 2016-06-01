@@ -1,7 +1,5 @@
 package com.mook.locker.cache;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.mook.locker.annotation.VersionLocker;
