@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.ibatis.binding.MapperMethod;
+import org.apache.ibatis.binding.MapperRegistry;
 import org.apache.ibatis.executor.parameter.ParameterHandler;
 import org.apache.ibatis.executor.statement.StatementHandler;
 import org.apache.ibatis.logging.Log;
@@ -47,6 +48,9 @@ import org.apache.ibatis.type.TypeException;
 import org.apache.ibatis.type.TypeHandler;
 
 import com.mook.locker.annotation.VersionLocker;
+import com.mook.locker.cache.LocalVersionLockerCache;
+import com.mook.locker.cache.VersionLockerCache;
+import com.mook.locker.exception.UncachedMapperException;
 
 /**
  * <p>MyBatis乐观锁插件<br>
@@ -65,7 +69,8 @@ public class OptimisticLocker implements Interceptor {
 	
 	private static final Log log = LogFactory.getLog(OptimisticLocker.class);
 	
-	Properties props = null;
+	private Properties props = null;
+	private VersionLockerCache versionLockerCache = new LocalVersionLockerCache();
 	
 	@Override
 	@SuppressWarnings({ "unchecked", "rawtypes" })
@@ -181,6 +186,10 @@ public class OptimisticLocker implements Interceptor {
 	}
 	
 	private boolean hasVersionLocker(MappedStatement ms, BoundSql boundSql) {
+		
+		MapperRegistry mapperRegistry = ms.getConfiguration().getMapperRegistry();
+		versionLockerCache.cacheMappers(mapperRegistry);
+		
 		Map<String, Class<?>> mapperMap = new HashMap<String, Class<?>>();
 		Collection<Class<?>> mappers = ms.getConfiguration().getMapperRegistry().getMappers();
 		if(null != mappers && !mappers.isEmpty()) {
@@ -192,7 +201,13 @@ public class OptimisticLocker implements Interceptor {
 		Class<?>[] paramCls = null;
 		
 		Object paramObj = boundSql.getParameterObject();
-		if(paramObj instanceof MapperMethod.ParamMap<?>) {
+		
+		// 处理Map类型参数
+		if(paramObj instanceof Map) {
+			paramCls = new Class<?>[] {Map.class};
+			
+		// 处理@Param标记的参数
+		} else if(paramObj instanceof MapperMethod.ParamMap<?>) {
 			MapperMethod.ParamMap<?> mmp = (MapperMethod.ParamMap<?>) paramObj;
 			if(null != mmp && !mmp.isEmpty()) {
 				paramCls = new Class<?>[mmp.size() / 2];
@@ -202,29 +217,38 @@ public class OptimisticLocker implements Interceptor {
 					paramCls[i] = index.getClass();
 				}
 			}
+			
+		// 处理POJO实体对象类型的参数
+		} else {
+			paramCls = new Class<?>[] {paramObj.getClass()};
 		}
 		
+		
 		String id = ms.getId();
+		
+		VersionLocker versionLocker = null;
+		try {
+			versionLocker = versionLockerCache.getCachedVersionLock(mapperRegistry, id, paramCls);
+		} catch (UncachedMapperException e1) {
+			e1.printStackTrace();
+		}
+		if (null != versionLocker && versionLocker.value() == false) {
+			return true;
+		}
+		
 		int pos = id.lastIndexOf(".");
 		String nameSpace = id.substring(0, pos);
 		if(mapperMap.containsKey(nameSpace)) {
 			Class<?> mapper = mapperMap.get(nameSpace);
 			Method m = null;
 			try {
-				if(null == paramCls) {
-					if(paramObj instanceof Map) {
-						paramCls = new Class<?>[] {Map.class};
-					} else {
-						paramCls = new Class<?>[] {paramObj.getClass()};
-					}
-				}
 				m = mapper.getDeclaredMethod(id.substring(pos + 1), paramCls);
 				
 			} catch (NoSuchMethodException | SecurityException e) {
 				throw new RuntimeException("Map类型的参数错误" + e, e);
 			}
-			VersionLocker vl = m.getAnnotation(VersionLocker.class);
-			if(null != vl && vl.value() == false) {
+			versionLocker = m.getAnnotation(VersionLocker.class);
+			if(null != versionLocker && versionLocker.value() == false) {
 				return true;
 			}
 			return false;
