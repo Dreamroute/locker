@@ -211,10 +211,12 @@ public class OptimisticLocker implements Interceptor {
 			Class<?> mapper = mapperMap.get(nameSpace);
 			Method m = null;
 			try {
-				if(null == paramCls && paramObj instanceof Map) {
-					paramCls = new Class<?>[] {Map.class};
-				} else {
-					paramCls = new Class<?>[] {paramObj.getClass()};
+				if(null == paramCls) {
+					if(paramObj instanceof Map) {
+						paramCls = new Class<?>[] {Map.class};
+					} else {
+						paramCls = new Class<?>[] {paramObj.getClass()};
+					}
 				}
 				m = mapper.getDeclaredMethod(id.substring(pos + 1), paramCls);
 				
@@ -224,9 +226,8 @@ public class OptimisticLocker implements Interceptor {
 			VersionLocker vl = m.getAnnotation(VersionLocker.class);
 			if(null != vl && vl.value() == false) {
 				return true;
-			} else {
-				return false;
 			}
+			return false;
 		} else {
 			throw new RuntimeException("配置错误");
 		}
