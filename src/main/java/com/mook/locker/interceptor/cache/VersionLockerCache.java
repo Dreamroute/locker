@@ -4,13 +4,13 @@ import java.util.Arrays;
 
 import com.mook.locker.annotation.VersionLocker;
 import com.mook.locker.interceptor.cache.exception.UncachedMapperException;
-import org.apache.ibatis.binding.MapperRegistry;
+import org.apache.ibatis.session.Configuration;
 
 /**
  * Created by wyx on 2016/6/1.
  */
 public interface VersionLockerCache extends AnnotationCache<VersionLockerCache.MethodSignature, VersionLocker> {
-    void cacheMappers(MapperRegistry mapperRegistry);
+    boolean cacheMappers(Configuration configuration, String id, Class<?>[] params);
 
     boolean hasCachedMappers();
 

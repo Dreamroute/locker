@@ -26,7 +26,6 @@ import com.mook.locker.interceptor.cache.LocalVersionLockerCache;
 import com.mook.locker.interceptor.cache.VersionLockerCache;
 import com.mook.locker.interceptor.cache.exception.UncachedMapperException;
 import org.apache.ibatis.binding.MapperMethod;
-import org.apache.ibatis.binding.MapperRegistry;
 import org.apache.ibatis.executor.parameter.ParameterHandler;
 import org.apache.ibatis.executor.statement.StatementHandler;
 import org.apache.ibatis.logging.Log;
@@ -180,9 +179,6 @@ public class OptimisticLocker implements Interceptor {
 	}
 
 	private boolean hasVersionLocker(MappedStatement ms, BoundSql boundSql) {
-		MapperRegistry mapperRegistry = ms.getConfiguration().getMapperRegistry();
-		versionLockerCache.cacheMappers(mapperRegistry);
-
         Object paramObj = boundSql.getParameterObject();
         Class<?>[] paramCls = new Class<?>[]{
                 paramObj.getClass()
@@ -201,6 +197,7 @@ public class OptimisticLocker implements Interceptor {
 		}
 		
 		String id = ms.getId();
+        versionLockerCache.cacheMappers(ms.getConfiguration(), id, paramCls);
 		VersionLocker versionLocker = null;
 		try {
 			versionLocker = versionLockerCache.getAnnotation(id, paramCls);

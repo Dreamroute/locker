@@ -2,7 +2,6 @@ package com.mook.locker.interceptor.cache;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.locks.Lock;
@@ -10,7 +9,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import com.mook.locker.annotation.VersionLocker;
 import com.mook.locker.interceptor.cache.exception.UncachedMapperException;
-import org.apache.ibatis.binding.MapperRegistry;
+import org.apache.ibatis.session.Configuration;
 
 /**
  * Created by wyx on 2016/6/1.
@@ -21,48 +20,68 @@ public class LocalVersionLockerCache implements VersionLockerCache {
 
     private final Lock cachedLock = new ReentrantLock();
 
+    private final Map<String, Class<?>> mappedClass = new HashMap<>();
+
+    private volatile boolean initFinished = false;
+
     @Override
-    public void cacheMappers(MapperRegistry mapperRegistry) {
-        if (mapperRegistry == null) {
-            throw new NullPointerException("mapperRegistry cannot be null.");
+    public boolean cacheMappers(Configuration configuration, String id, Class<?>[] params) {
+        if (configuration == null) {
+            throw new NullPointerException("configuration cannot be null.");
         }
-        if (!hasCachedMappers()) {
-            Collection<Class<?>> mappers = mapperRegistry.getMappers();
-            if (null != mappers && !mappers.isEmpty()) {
-                Map<MethodSignature, VersionLocker> map = new HashMap<>();
-                for (Class<?> mapper : mappers) {
-                    addCacheEntry(map, mapper);
-                }
-                final Lock cachedLock = this.cachedLock;
-                cachedLock.lock();
-                try {
-                    if (!hasCachedMappers()) {
-                        cachedMap.putAll(map);
+
+        initMappedClass(configuration);
+
+        final MethodSignature methodSignature = new MethodSignature(id, params);
+        boolean updated = false;
+        if (!cachedMap.containsKey(methodSignature)) {
+            final Lock cacheInitLock = this.cachedLock;
+            cacheInitLock.lock();
+            try {
+                if (!cachedMap.containsKey(methodSignature)) {
+                    int lastPointPos = id.lastIndexOf('.');
+                    String clsName = id.substring(0, lastPointPos);
+                    String methodName = id.substring(lastPointPos + 1);
+                    Class<?> mapper = mappedClass.get(clsName);
+                    if (mapper == null) {
+                        throw new RuntimeException("Class " + clsName + " isn't a mapper for Mybatis.");
                     }
-                } finally {
-                    cachedLock.unlock();
+                    Method m;
+                    try {
+                        m = mapper.getMethod(methodName, params);
+                    } catch (NoSuchMethodException e) {
+                        throw new RuntimeException(id + "(" + Arrays.toString(params) + ") is not a valid method.", e);
+                    }
+                    cachedMap.put(methodSignature, m.getAnnotation(VersionLocker.class));
+                    updated = true;
                 }
+            } finally {
+                cacheInitLock.unlock();
             }
         }
+        return updated;
     }
 
-    protected void addCacheEntry(Map<MethodSignature, VersionLocker> map, Class<?> mapper) {
-        if (mapper == null) {
-            throw new NullPointerException("mapper cannot be null.");
-        }
-        String mapperName = mapper.getName();
-        for (Method method : mapper.getDeclaredMethods()) {
-            String id = mapperName + "." + method.getName();
-            Class<?>[] params = method.getParameterTypes();
-            MethodSignature methodSignature = new MethodSignature(id, params);
-            VersionLocker versionLocker = method.getAnnotation(VersionLocker.class);
-            map.put(methodSignature, versionLocker);
+    private void initMappedClass(Configuration configuration) {
+        final Lock cacheInitLock = this.cachedLock;
+        if (!initFinished) {
+            cacheInitLock.lock();
+            try {
+                if (!initFinished) {
+                    for (Class<?> mapper : configuration.getMapperRegistry().getMappers()) {
+                        mappedClass.put(mapper.getName(), mapper);
+                    }
+                    initFinished = true;
+                }
+            } finally {
+                cacheInitLock.unlock();
+            }
         }
     }
 
     @Override
     public boolean hasCachedMappers() {
-        return !cachedMap.isEmpty();
+        return initFinished;
     }
 
     @Override
