@@ -68,9 +68,21 @@ public class OptimisticLocker implements Interceptor {
 	
 	private static final Log log = LogFactory.getLog(OptimisticLocker.class);
 	
+	private static VersionLocker trueLocker;
+	static {
+		try {
+			trueLocker = new OptimisticLocker().getClass().getDeclaredMethod("versionValue").getAnnotation(VersionLocker.class);
+		} catch (NoSuchMethodException | SecurityException e) {
+			throw new RuntimeException("初始化插件失败");
+		}
+	}
+	
 	private Properties props = null;
 	private VersionLockerCache versionLockerCache = new LocalVersionLockerCache();
 	Map<String, Class<?>> mapperMap = null;
+	
+	@VersionLocker(true)
+	private void versionValue() {}
 	
 	@Override
 	@SuppressWarnings({ "unchecked", "rawtypes" })
@@ -248,12 +260,8 @@ public class OptimisticLocker implements Interceptor {
 			}
 			versionLocker = m.getAnnotation(VersionLocker.class);
 			if(null == versionLocker) {
-				try {
-					versionLocker = this.getClass().getDeclaredMethod("versionValue").getAnnotation(VersionLocker.class);
-					versionLockerCache.cacheMethod(vm, versionLocker);
-				} catch (NoSuchMethodException | SecurityException e) {
-					e.printStackTrace();
-				}
+				versionLocker = trueLocker;
+				versionLockerCache.cacheMethod(vm, versionLocker);
 			}
 			return versionLocker;
 		} else {
@@ -284,8 +292,5 @@ public class OptimisticLocker implements Interceptor {
 			this.value = value;
 		}
 	}
-	
-	@VersionLocker(true)
-	private void versionValue() {}
 
 }
