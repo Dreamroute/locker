@@ -265,7 +265,7 @@ public class OptimisticLocker implements Interceptor {
 			}
 			return versionLocker;
 		} else {
-			throw new RuntimeException("配置错误");
+			throw new RuntimeException("配置信息错误，可能还未配置Mapper接口");
 		}
 	}
 
