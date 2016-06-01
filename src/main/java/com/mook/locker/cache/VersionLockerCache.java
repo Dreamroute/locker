@@ -1,23 +1,38 @@
 package com.mook.locker.cache;
 
-import org.apache.ibatis.binding.MapperRegistry;
-
 import com.mook.locker.annotation.VersionLocker;
-import com.mook.locker.exception.UncachedMapperException;
 
-/**
- * Created by wyx on 2016/6/1.
- */
 public interface VersionLockerCache {
-	    void cacheMappers(MapperRegistry mapperRegistry);
-	
-	    boolean hasCachedMappers(MapperRegistry mapperRegistry);
-	
-	    void clear(MapperRegistry mapperRegistry);
-	
-	    void clear();
-	
-	    VersionLocker getCachedVersionLock(MapperRegistry mapperRegistry, String id, Class<?>[] params) throws UncachedMapperException;
-	
-	    VersionLocker getCachedVersionLock(String id, Class<?>[] params) throws UncachedMapperException;
+
+	void cacheMethod(VersionLockerCache.MethodSignature vm, VersionLocker locker);
+
+	VersionLocker getVersionLocker(VersionLockerCache.MethodSignature vm);
+
+	static class MethodSignature {
+		
+		private String id;
+		private Class<?>[] params;
+		
+		public MethodSignature(String id, Class<?>[] params) {
+			this.id = id;
+			this.params = params;
+		}
+		
+		public String getId() {
+			return id;
+		}
+		
+		public void setId(String id) {
+			this.id = id;
+		}
+
+		public Class<?>[] getParams() {
+			return params;
+		}
+
+		public void setParams(Class<?>[] params) {
+			this.params = params;
+		}
+
 	}
+}

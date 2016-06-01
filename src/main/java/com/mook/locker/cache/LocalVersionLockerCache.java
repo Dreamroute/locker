@@ -1,131 +1,124 @@
 package com.mook.locker.cache;
 
-import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.ibatis.binding.MapperRegistry;
-
 import com.mook.locker.annotation.VersionLocker;
-import com.mook.locker.exception.UncachedMapperException;
 
-/**
- * Created by wyx on 2016/6/1.
- */
 public class LocalVersionLockerCache implements VersionLockerCache {
+	
+	private ConcurrentHashMap<String, ConcurrentHashMap<VersionLockerCache.MethodSignature, VersionLocker>> caches = new ConcurrentHashMap<>();
 
-    private final ConcurrentHashMap<MapperRegistry, Map<MethodSignature, VersionLocker>> cachedMap = new ConcurrentHashMap<>();
+	@Override
+	public synchronized void cacheMethod(VersionLockerCache.MethodSignature vm, VersionLocker locker) {
+		String id = vm.getId();
+		int pos = id.lastIndexOf(".");
+		String nameSpace = id.substring(0, pos);
+		ConcurrentHashMap<VersionLockerCache.MethodSignature, VersionLocker> cache = caches.get(nameSpace);
+		if(null == cache || cache.isEmpty()) {
+			cache = new ConcurrentHashMap<>();
+			cache.put(vm, locker);
+		}
+	}
 
-    public static class MethodSignature {
-        private String id;
+	@Override
+	public VersionLocker getVersionLocker(VersionLockerCache.MethodSignature vm) {
+		String id = vm.getId();
+		int pos = id.lastIndexOf(".");
+		String nameSpace = id.substring(0, pos);
+		ConcurrentHashMap<VersionLockerCache.MethodSignature, VersionLocker> cache = caches.get(nameSpace);
+		if(null == cache || cache.isEmpty()) {
+			return null;
+		}
+		return cache.get(vm);
+	}
 
-        private Class<?>[] params;
 
-        public MethodSignature(String id, Class<?>[] params) {
-            this.id = id;
-            this.params = params;
-        }
-
-        public String getId() {
-            return id;
-        }
-
-        public void setId(String id) {
-            this.id = id;
-        }
-
-        public Class<?>[] getParams() {
-            return params;
-        }
-
-        public void setParams(Class<?>[] params) {
-            this.params = params;
-        }
-
-        @Override
-        public int hashCode() {
-            int idHash = id.hashCode();
-            int paramsHash = Arrays.hashCode(params);
-            return ((idHash >> 16 ^ idHash) << 16) | (paramsHash >> 16 ^ paramsHash);
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (!(obj instanceof MethodSignature)) {
-                return super.equals(obj);
-            }
-            MethodSignature ms = (MethodSignature) obj;
-            return id.equals(ms.id) && Arrays.equals(params, ms.params);
-        }
-    }
-
-    @Override
-    public void cacheMappers(MapperRegistry mapperRegistry) {
-        if (mapperRegistry == null) {
-            throw new NullPointerException("mapperRegistry cannot be null.");
-        }
-        if (!hasCachedMappers(mapperRegistry)) {
-            Map<MethodSignature, VersionLocker> map = new HashMap<>();
-            Collection<Class<?>> mappers = mapperRegistry.getMappers();
-            if (null != mappers && !mappers.isEmpty()) {
-                for (Class<?> mapper : mappers) {
-                    addCacheEntry(map, mapper);
-                }
-            }
-            cachedMap.putIfAbsent(mapperRegistry, map);
-        }
-    }
-
-    private void addCacheEntry(Map<MethodSignature, VersionLocker> map, Class<?> mapper) {
-        if (mapper == null) {
-            throw new NullPointerException("mapper cannot be null.");
-        }
-        String mapperName = mapper.getName();
-        for (Method method : mapper.getDeclaredMethods()) {
-            String id = mapperName + "." + method.getName();
-            Class<?>[] params = method.getParameterTypes();
-            MethodSignature methodSignature = new MethodSignature(id, params);
-            VersionLocker versionLocker = method.getAnnotation(VersionLocker.class);
-            map.put(methodSignature, versionLocker);
-        }
-    }
-
-    @Override
-    public boolean hasCachedMappers(MapperRegistry mapperRegistry) {
-        return cachedMap.containsKey(mapperRegistry);
-    }
-
-    @Override
-    public void clear(MapperRegistry mapperRegistry) {
-        cachedMap.remove(mapperRegistry);
-    }
-
-    @Override
-    public void clear() {
-        cachedMap.clear();
-    }
-
-    @Override
-    public VersionLocker getCachedVersionLock(MapperRegistry mapperRegistry, String id, Class<?>[] params) throws UncachedMapperException {
-        Map<MethodSignature, VersionLocker> map = cachedMap.get(mapperRegistry);
-        if (map == null) {
-            throw new UncachedMapperException("Cannot find cached data for " + mapperRegistry + " " + id + "(" + Arrays.toString(params) + ").");
-        }
-        return map.get(new MethodSignature(id, params));
-    }
-
-    @Override
-    public VersionLocker getCachedVersionLock(String id, Class<?>[] params) throws UncachedMapperException {
-        for (MapperRegistry mapperRegistry : cachedMap.keySet()) {
-            try {
-                return getCachedVersionLock(mapperRegistry, id, params);
-            } catch (UncachedMapperException ignored) {
-
-            }
-        }
-        throw new UncachedMapperException("Cannot find cached data for " + id + "(" + Arrays.toString(params) + ").");
-    }
+//    private final Map<MethodSignature, VersionLocker> cachedMap = new HashMap<>();
+//
+//    private final Lock cachedLock = new ReentrantLock();
+//
+//    private final Map<String, Class<?>> mappedClass = new HashMap<>();
+//
+//    private volatile boolean initFinished = false;
+//
+//    @Override
+//    public boolean cacheMappers(Configuration configuration, String id, Class<?>[] params) {
+//        if (configuration == null) {
+//            throw new NullPointerException("configuration cannot be null.");
+//        }
+//
+//        initMappedClass(configuration);
+//
+//        final MethodSignature methodSignature = new MethodSignature(id, params);
+//        boolean updated = false;
+//        if (!cachedMap.containsKey(methodSignature)) {
+//            final Lock cacheInitLock = this.cachedLock;
+//            cacheInitLock.lock();
+//            try {
+//                if (!cachedMap.containsKey(methodSignature)) {
+//                    int lastPointPos = id.lastIndexOf('.');
+//                    String clsName = id.substring(0, lastPointPos);
+//                    String methodName = id.substring(lastPointPos + 1);
+//                    Class<?> mapper = mappedClass.get(clsName);
+//                    if (mapper == null) {
+//                        throw new RuntimeException("Class " + clsName + " isn't a mapper for Mybatis.");
+//                    }
+//                    Method m;
+//                    try {
+//                        m = mapper.getMethod(methodName, params);
+//                    } catch (NoSuchMethodException e) {
+//                        throw new RuntimeException(id + "(" + Arrays.toString(params) + ") is not a valid method.", e);
+//                    }
+//                    cachedMap.put(methodSignature, m.getAnnotation(VersionLocker.class));
+//                    updated = true;
+//                }
+//            } finally {
+//                cacheInitLock.unlock();
+//            }
+//        }
+//        return updated;
+//    }
+//
+//    private void initMappedClass(Configuration configuration) {
+//        final Lock cacheInitLock = this.cachedLock;
+//        if (!initFinished) {
+//            cacheInitLock.lock();
+//            try {
+//                if (!initFinished) {
+//                    for (Class<?> mapper : configuration.getMapperRegistry().getMappers()) {
+//                        mappedClass.put(mapper.getName(), mapper);
+//                    }
+//                    initFinished = true;
+//                }
+//            } finally {
+//                cacheInitLock.unlock();
+//            }
+//        }
+//    }
+//
+//    @Override
+//    public boolean hasCachedMappers() {
+//        return initFinished;
+//    }
+//
+//    @Override
+//    public void clear() {
+//        cachedMap.clear();
+//    }
+//
+//    @Override
+//    public VersionLocker getAnnotation(String id, Class<?>[] params) throws UncachedMapperException {
+//        return getAnnotation(new MethodSignature(id, params));
+//    }
+//
+//    @Override
+//    public VersionLocker getAnnotation(MethodSignature methodSignature) throws UncachedMapperException {
+//        if (methodSignature == null) {
+//            throw new NullPointerException("methodSignature cannot be null.");
+//        }
+//        if (!cachedMap.containsKey(methodSignature)) {
+//            throw new UncachedMapperException("Cannot find cached data for " + methodSignature.getId() + "(" + Arrays.toString(methodSignature.getParams()) + ").");
+//        }
+//        return cachedMap.get(methodSignature);
+//    }
 }
