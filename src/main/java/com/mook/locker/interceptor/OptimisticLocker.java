@@ -71,6 +71,7 @@ public class OptimisticLocker implements Interceptor {
 	
 	private Properties props = null;
 	private VersionLockerCache versionLockerCache = new LocalVersionLockerCache();
+	Map<String, Class<?>> mapperMap = null;
 	
 	@Override
 	@SuppressWarnings({ "unchecked", "rawtypes" })
@@ -187,14 +188,18 @@ public class OptimisticLocker implements Interceptor {
 	
 	private boolean hasVersionLocker(MappedStatement ms, BoundSql boundSql) {
 		
-		MapperRegistry mapperRegistry = ms.getConfiguration().getMapperRegistry();
-		versionLockerCache.cacheMappers(mapperRegistry);
-		
-		Map<String, Class<?>> mapperMap = new HashMap<String, Class<?>>();
-		Collection<Class<?>> mappers = ms.getConfiguration().getMapperRegistry().getMappers();
-		if(null != mappers && !mappers.isEmpty()) {
-			for (Class<?> me : mappers) {
-				mapperMap.put(me.getName(), me);
+		synchronized (this) {
+			if(null == mapperMap || mapperMap.isEmpty()) {
+				MapperRegistry mapperRegistry = ms.getConfiguration().getMapperRegistry();
+				versionLockerCache.cacheMappers(mapperRegistry);
+				
+				mapperMap = new HashMap<String, Class<?>>();
+				Collection<Class<?>> mappers = ms.getConfiguration().getMapperRegistry().getMappers();
+				if(null != mappers && !mappers.isEmpty()) {
+					for (Class<?> me : mappers) {
+						mapperMap.put(me.getName(), me);
+					}
+				}
 			}
 		}
 		
