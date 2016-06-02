@@ -1,6 +1,11 @@
 # MyBatis乐观锁插件 #
 
 ----------
+
+
+0. 本插件主要是为了解决MyBatis Generator自动生成的update标签不带乐观锁的问题。
+
+----------
 ### 1. 使用方式：在mybatis配置文件中加入如下配置，就完成了。 ###
 	<plugins>
 		<plugin interceptor="com.mook.locker.interceptor.OptimisticLocker"/>
