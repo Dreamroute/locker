@@ -1,7 +1,8 @@
 # MyBatis乐观锁插件 #
 
-----------
+![mybatis](http://i.imgur.com/Ddl1dSu.png)
 
+----------
 
 	描述：本插件主要是为了解决MyBatis Generator自动生成的update标签不带乐观锁的问题，为开发带来比较简单优雅的实现方式。
 
