@@ -9,6 +9,7 @@ public class User implements Serializable {
 	private Integer id;
 	private String name;
 	private String password;
+	private Long version;
 
 	public Integer getId() {
 		return id;
@@ -57,6 +58,14 @@ public class User implements Serializable {
 		} else if (!id.equals(other.id))
 			return false;
 		return true;
+	}
+
+	public Long getVersion() {
+		return version;
+	}
+
+	public void setVersion(Long version) {
+		this.version = version;
 	}
 
 }

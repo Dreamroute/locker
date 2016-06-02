@@ -88,9 +88,14 @@ public class OptimisticLocker implements Interceptor {
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public Object intercept(Invocation invocation) throws Exception {
 		
-		String interceptMethod = invocation.getMethod().getName();
-		String versionColumn = props.getProperty("versionColumn", "version");
+		String versionColumn = null;
+		if(null == props || props.isEmpty()) {
+			versionColumn = "version";
+		} else {
+			versionColumn = props.getProperty("versionColumn", "version");
+		}
 		
+		String interceptMethod = invocation.getMethod().getName();
 		if("prepare".equals(interceptMethod)) {
 			
 			StatementHandler handler = (StatementHandler) invocation.getTarget();
