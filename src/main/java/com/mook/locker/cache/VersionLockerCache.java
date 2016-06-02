@@ -10,7 +10,7 @@ public interface VersionLockerCache {
 	void cacheMethod(VersionLockerCache.MethodSignature vm, VersionLocker locker);
 	VersionLocker getVersionLocker(VersionLockerCache.MethodSignature vm);
 
-	static class MethodSignature {
+	class MethodSignature {
 
 		private String id;
 		private Class<?>[] params;
@@ -49,6 +49,7 @@ public interface VersionLockerCache {
 				return super.equals(obj);
 			}
 			MethodSignature ms = (MethodSignature) obj;
+			// 对同一个方法的判断：1、方法名相同；2、参数列表相同
 			return id.equals(ms.id) && Arrays.equals(params, ms.params);
 		}
 
