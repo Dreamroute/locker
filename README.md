@@ -10,7 +10,7 @@
 
 ### 2. 对插件配置的说明： ###
 	
-上面是默认默认数据库的乐观锁列对应的Java属性为version。这里可以自定义属性命，例如：
+上面对插件的配置默认数据库的乐观锁列对应的Java属性为version。这里可以自定义属性命，例如：
 
 	<plugins>
 		<plugin interceptor="com.mook.locker.interceptor.OptimisticLocker">
@@ -29,7 +29,8 @@
 
 
 ### 4. 对version的值的说明： ###
-	当PreparedStatement将第一个version的值设置之后，插件内部会自动自增1，设置到第二个version上面去。
+	1、当PreparedStatement将第一个version的值设置之后，插件内部会自动自增1，设置到第二个version上面去。
+	2、乐观锁的整个控制过程对用户而言是透明的，这和Hibernate的乐观锁很相似，用户不需要关心乐观锁的值。
 
 *作者QQ：342252328*
 
