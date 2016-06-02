@@ -10,9 +10,7 @@ public class LocalVersionLockerCache implements VersionLockerCache {
 	
 	@Override
 	public boolean containMethodSinature(MethodSignature vm) {
-		String id = vm.getId();
-		int pos = id.lastIndexOf(".");
-		String nameSpace = id.substring(0, pos);
+		String nameSpace = getNameSpace(vm);
 		ConcurrentHashMap<VersionLockerCache.MethodSignature, VersionLocker> cache = caches.get(nameSpace);
 		if(null == cache || cache.isEmpty()) {
 			return false;
@@ -22,9 +20,7 @@ public class LocalVersionLockerCache implements VersionLockerCache {
 	
 	@Override
 	public synchronized void cacheMethod(VersionLockerCache.MethodSignature vm, VersionLocker locker) {
-		String id = vm.getId();
-		int pos = id.lastIndexOf(".");
-		String nameSpace = id.substring(0, pos);
+		String nameSpace = getNameSpace(vm);
 		ConcurrentHashMap<VersionLockerCache.MethodSignature, VersionLocker> cache = caches.get(nameSpace);
 		if(null == cache || cache.isEmpty()) {
 			cache = new ConcurrentHashMap<>();
@@ -37,14 +33,19 @@ public class LocalVersionLockerCache implements VersionLockerCache {
 
 	@Override
 	public VersionLocker getVersionLocker(VersionLockerCache.MethodSignature vm) {
-		String id = vm.getId();
-		int pos = id.lastIndexOf(".");
-		String nameSpace = id.substring(0, pos);
+		String nameSpace = getNameSpace(vm);
 		ConcurrentHashMap<VersionLockerCache.MethodSignature, VersionLocker> cache = caches.get(nameSpace);
 		if(null == cache || cache.isEmpty()) {
 			return null;
 		}
 		return cache.get(vm);
+	}
+
+	private String getNameSpace(VersionLockerCache.MethodSignature vm) {
+		String id = vm.getId();
+		int pos = id.lastIndexOf(".");
+		String nameSpace = id.substring(0, pos);
+		return nameSpace;
 	}
 
 }
