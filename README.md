@@ -11,6 +11,7 @@
 ### 2. 对插件配置的说明： ###
 	
 上面是默认默认数据库的乐观锁列对应的Java属性为version。这里可以自定义属性命，例如：
+
 	<plugins>
 		<plugin interceptor="com.mook.locker.interceptor.OptimisticLocker">
 			<property name="versionColumn" value="xxx"/>
