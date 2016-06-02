@@ -61,13 +61,15 @@
 
 ### 6.默认约定： ###
 	1、本插件拦截的update语句的Statement都是PreparedStatement，仅针对这种方式的sql有效；
-	2、mapper.xml的<update>标签必须要与接口Mapper的方法对应上，也就是使用mybatis推荐的
-	方式，但是多个接口可以对应一个mapper.xml的<update>标签；
+	2、mapper.xml的<update>标签必须要与接口Mapper的方法对应上，也就是使用mybatis推荐的方式，
+	   但是多个接口可以对应一个mapper.xml的<update>标签；
 	3、本插件不会对sql的结果做任何操作，sql本身应该返回什么就是什么；
 	4、插件默认拦截所有update语句，如果用户对某个update不希望有乐观锁控制，那么在对应的mapper接口
-	方法上面增加@VersionLocker(false)或者@VersionLocker(value = false),
-	这样插件就不会对这个update做任何操作，等同于没有本插件；
+	   方法上面增加@VersionLocker(false)或者@VersionLocker(value = false),
+	   这样插件就不会对这个update做任何操作，等同于没有本插件；
 	5、本插件目前暂时不支持批量更新的乐观锁，原因是由于批量更新在实际开发中应用场景不多，另外批量更新乐观锁开发难度比较大；
+	6、Mapper接口的参数类型必须和传入的实际类型保持一致，这是由于在JDK版本在JDK8以下没有任何方法能获取接口的参数列表名称，
+	   因此，插件内部是使用参数类型和参数作为映射来匹配方法签名的；
 
 ----------
 
