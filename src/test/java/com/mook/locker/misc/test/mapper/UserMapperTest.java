@@ -9,6 +9,7 @@ import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.session.SqlSessionFactoryBuilder;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -36,6 +37,16 @@ public class UserMapperTest {
 		user.setName("test");
 		user.setPassword("test");
 		user.setVersion(100L);
+	}
+	
+	@After
+	public void resetDatabaseTest() {
+		user.setId(100);
+		user.setName("test");
+		user.setPassword("test");
+		user.setVersion(100L);
+		UserMapper userMapper = sqlSession.getMapper(UserMapper.class);
+		userMapper.resetData(user);
 	}
 	
 	@Test

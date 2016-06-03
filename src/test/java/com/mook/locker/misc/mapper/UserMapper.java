@@ -24,4 +24,8 @@ public interface UserMapper {
 	// 不参与乐观锁控制
 	@VersionLocker(false)
 	Integer updateUserNoVersionLocker(User user);
+
+	// 重置数据库数据
+	@VersionLocker(false)
+	void resetData(User user);
 }

@@ -17,10 +17,14 @@ package com.mook.locker.cache;
 
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.ibatis.logging.Log;
+import org.apache.ibatis.logging.LogFactory;
+
 import com.mook.locker.annotation.VersionLocker;
 
 public class LocalVersionLockerCache implements VersionLockerCache {
 	
+	private static final Log log = LogFactory.getLog(LocalVersionLockerCache.class);
 	private ConcurrentHashMap<String, ConcurrentHashMap<VersionLockerCache.MethodSignature, VersionLocker>> caches = new ConcurrentHashMap<>();
 	
 	@Override
@@ -30,7 +34,11 @@ public class LocalVersionLockerCache implements VersionLockerCache {
 		if(null == cache || cache.isEmpty()) {
 			return false;
 		}
-		return cache.containsKey(vm);
+		boolean contain = cache.containsKey(vm);
+		if(true == contain && log.isDebugEnabled()) {
+			log.debug("The method " + nameSpace + vm.getId() + "is hit in cache.");
+		}
+		return contain;
 	}
 	
 	@Override
@@ -41,6 +49,9 @@ public class LocalVersionLockerCache implements VersionLockerCache {
 			cache = new ConcurrentHashMap<>();
 			cache.put(vm, locker);
 			caches.put(nameSpace, cache);
+			if(log.isDebugEnabled()) {
+				log.debug("Locker debug info ==> " + nameSpace + ": " + vm.getId() + " is cached.");
+			}
 		} else {
 			cache.put(vm, locker);
 		}
