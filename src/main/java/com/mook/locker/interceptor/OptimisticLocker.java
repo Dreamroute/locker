@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.ibatis.binding.MapperMethod;
 import org.apache.ibatis.executor.parameter.ParameterHandler;
