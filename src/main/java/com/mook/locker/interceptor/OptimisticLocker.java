@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.ibatis.binding.MapperMethod;
 import org.apache.ibatis.executor.parameter.ParameterHandler;
@@ -240,14 +241,13 @@ public class OptimisticLocker implements Interceptor {
 			return versionLocker;
 		}
 		
-		synchronized (this) {
-			if(null == mapperMap || mapperMap.isEmpty()) {
-				mapperMap = new HashMap<String, Class<?>>();
-				Collection<Class<?>> mappers = ms.getConfiguration().getMapperRegistry().getMappers();
-				if(null != mappers && !mappers.isEmpty()) {
-					for (Class<?> me : mappers) {
-						mapperMap.put(me.getName(), me);
-					}
+		// 这里去掉synchronized或者重入锁，因为这里的操作满足幂等性
+		if(null == mapperMap || mapperMap.isEmpty()) {
+			mapperMap = new HashMap<String, Class<?>>();
+			Collection<Class<?>> mappers = ms.getConfiguration().getMapperRegistry().getMappers();
+			if(null != mappers && !mappers.isEmpty()) {
+				for (Class<?> me : mappers) {
+					mapperMap.put(me.getName(), me);
 				}
 			}
 		}

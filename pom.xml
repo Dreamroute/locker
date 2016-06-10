@@ -35,4 +35,8 @@
 			<optional>true</optional>
 		</dependency>
 	</dependencies>
+	<scm>
+		<url>https://github.com/Dreamroute/locker</url>
+		<developerConnection>Dreamroute</developerConnection>
+	</scm>
 </project>

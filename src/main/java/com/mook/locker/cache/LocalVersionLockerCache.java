@@ -41,8 +41,9 @@ public class LocalVersionLockerCache implements VersionLockerCache {
 		return contain;
 	}
 	
+	// 这里去掉synchronized或者重入锁，因为这里的操作满足幂等性
 	@Override
-	public synchronized void cacheMethod(VersionLockerCache.MethodSignature vm, VersionLocker locker) {
+	public void cacheMethod(VersionLockerCache.MethodSignature vm, VersionLocker locker) {
 		String nameSpace = getNameSpace(vm);
 		ConcurrentHashMap<VersionLockerCache.MethodSignature, VersionLocker> cache = caches.get(nameSpace);
 		if(null == cache || cache.isEmpty()) {
