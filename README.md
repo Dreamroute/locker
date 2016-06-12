@@ -1,4 +1,4 @@
-# MyBatis乐观锁插件 #
+# MyBatis乐观锁插件 | MyBatis Optimistic Plugin #
 
 mybatis optimistic plugin
 
