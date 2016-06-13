@@ -15,7 +15,7 @@
 ----------
 
 ## Document: ##
-En: [https://github.com/Dreamroute/locker/wiki/English-Documet](https://github.com/Dreamroute/locker/wiki/English-Documet "en")<br />
+En Doc: [https://github.com/Dreamroute/locker/wiki/English-Documet](https://github.com/Dreamroute/locker/wiki/English-Documet "en")<br />
 中文文档：[https://github.com/Dreamroute/locker/wiki/Chinese-document](https://github.com/Dreamroute/locker/wiki/Chinese-document "中文文档")
 
 ----------
