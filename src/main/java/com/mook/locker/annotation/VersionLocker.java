@@ -24,6 +24,6 @@ import java.lang.annotation.Target;
 @Target({ElementType.METHOD})
 public @interface VersionLocker {
 	
-	// 插件默认拦截所有update方法，不拦截标记@VersinoLocker(false)的方法
+	// Plugin intercepte update method by default, but except marked by @VersionLocker(false)
 	boolean value() default true;
 }

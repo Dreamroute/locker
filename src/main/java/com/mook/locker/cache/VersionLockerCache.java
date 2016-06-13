@@ -65,6 +65,7 @@ public interface VersionLockerCache {
 			}
 			MethodSignature ms = (MethodSignature) obj;
 			// 对同一个方法的判断：1、方法名相同；2、参数列表相同
+			// if the method singnature is 'equal', must 2 conditions: 1.the method be the same; 2.the parameters be the same
 			return id.equals(ms.id) && Arrays.equals(params, ms.params);
 		}
 

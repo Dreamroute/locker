@@ -53,6 +53,7 @@ import com.mook.locker.cache.VersionLockerCache.MethodSignature;
 
 /**
  * <p>MyBatis乐观锁插件<br>
+ * <p>MyBatis Optimistic Locker Plugin<br>
  * 
  * @author 342252328@qq.com
  * @date 2016-05-27
@@ -73,7 +74,7 @@ public class OptimisticLocker implements Interceptor {
 		try {
 			trueLocker = new OptimisticLocker().getClass().getDeclaredMethod("versionValue").getAnnotation(VersionLocker.class);
 		} catch (NoSuchMethodException | SecurityException e) {
-			throw new RuntimeException("初始化插件失败");
+			throw new RuntimeException("The plugin init faild.");
 		}
 	}
 	
@@ -142,7 +143,7 @@ public class OptimisticLocker implements Interceptor {
 				return invocation.proceed();
 			}
 			
-			Configuration configuration = (Configuration) hm.getValue("configuration");
+			Configuration configuration = ms.getConfiguration();
 			BoundSql boundSql = (BoundSql) hm.getValue("boundSql");
 			
 			VersionLocker vl = getVersionLocker(ms, boundSql);
@@ -160,7 +161,7 @@ public class OptimisticLocker implements Interceptor {
 			if(parameterObject instanceof MapperMethod.ParamMap<?>) {
 				MapperMethod.ParamMap<?> paramMap = (MapperMethod.ParamMap<?>) parameterObject;
 				if(!paramMap.containsKey(versionColumn)) {
-					throw new TypeException("基本类型的接口参数必须全部加上MyBatis的@Param标记");
+					throw new TypeException("All the base type parameters must add MyBatis's @Param Annotaion");
 				}
 			}
 	        Object value = pm.getValue(versionColumn);
@@ -197,7 +198,7 @@ public class OptimisticLocker implements Interceptor {
 			return (Double) value + vt.value;
 		} else {
 			if(parameterObject instanceof MapperMethod.ParamMap<?>) {
-				throw new TypeException("基本类型的接口参数必须全部加上MyBatis的@Param标记");
+				throw new TypeException("All the base type parameters must add MyBatis's @Param Annotaion");
 			} else {
 				throw new  TypeException("Property 'version' in " + parameterObject.getClass().getSimpleName() + 
 						" must be [ long, int, float, double ] or [ Long, Integer, Float, Double ]");
@@ -211,7 +212,9 @@ public class OptimisticLocker implements Interceptor {
 		Object paramObj = boundSql.getParameterObject();
 		
 		/******************下面处理参数只能按照下面3个的顺序***********************/
+		/******************Process param must order by below ***********************/
 		// 1、处理@Param标记的参数
+		// 1、Process @Param param
 		if(paramObj instanceof MapperMethod.ParamMap<?>) {
 			MapperMethod.ParamMap<?> mmp = (MapperMethod.ParamMap<?>) paramObj;
 			if(null != mmp && !mmp.isEmpty()) {
@@ -224,10 +227,12 @@ public class OptimisticLocker implements Interceptor {
 			}
 			
 		// 2、处理Map类型参数
+		// 2、Process Map param
 		} else if (paramObj instanceof Map) {
 			paramCls = new Class<?>[] {Map.class};
 			
 		// 3、处理POJO实体对象类型的参数
+		// 3、Process POJO entity param
 		} else {
 			paramCls = new Class<?>[] {paramObj.getClass()};
 		}
@@ -241,6 +246,7 @@ public class OptimisticLocker implements Interceptor {
 		}
 		
 		// 这里去掉synchronized或者重入锁，因为这里的操作满足幂等性
+		// Here remove synchronized keyword or ReentrantLock, because it's a idempotent operation
 		if(null == mapperMap || mapperMap.isEmpty()) {
 			mapperMap = new HashMap<String, Class<?>>();
 			Collection<Class<?>> mappers = ms.getConfiguration().getMapperRegistry().getMappers();
@@ -260,7 +266,7 @@ public class OptimisticLocker implements Interceptor {
 				m = mapper.getDeclaredMethod(id.substring(pos + 1), paramCls);
 				
 			} catch (NoSuchMethodException | SecurityException e) {
-				throw new RuntimeException("Map类型的参数错误" + e, e);
+				throw new RuntimeException("The Map type param error." + e, e);
 			}
 			versionLocker = m.getAnnotation(VersionLocker.class);
 			if(null == versionLocker) {
@@ -271,7 +277,7 @@ public class OptimisticLocker implements Interceptor {
 			}
 			return versionLocker;
 		} else {
-			throw new RuntimeException("配置信息错误，可能还未配置Mapper接口");
+			throw new RuntimeException("Config info error, maybe you have not config the Mapper interface");
 		}
 	}
 

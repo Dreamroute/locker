@@ -42,6 +42,7 @@ public class LocalVersionLockerCache implements VersionLockerCache {
 	}
 	
 	// 这里去掉synchronized或者重入锁，因为这里的操作满足幂等性
+	// Here remove synchronized keyword or ReentrantLock, because it's a idempotent operation
 	@Override
 	public void cacheMethod(VersionLockerCache.MethodSignature vm, VersionLocker locker) {
 		String nameSpace = getNameSpace(vm);
