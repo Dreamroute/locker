@@ -3,3 +3,7 @@
 /.classpath
 /.project
 /.settings/
+
+/out
+/.idea
+/**/*.iml
