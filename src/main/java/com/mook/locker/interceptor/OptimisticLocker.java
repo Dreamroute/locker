@@ -47,9 +47,10 @@ import org.apache.ibatis.type.TypeException;
 import org.apache.ibatis.type.TypeHandler;
 
 import com.mook.locker.annotation.VersionLocker;
+import com.mook.locker.cache.Cache;
+import com.mook.locker.cache.Cache.MethodSignature;
 import com.mook.locker.cache.LocalVersionLockerCache;
 import com.mook.locker.cache.VersionLockerCache;
-import com.mook.locker.cache.VersionLockerCache.MethodSignature;
 
 /**
  * <p>MyBatis乐观锁插件<br>
@@ -238,7 +239,7 @@ public class OptimisticLocker implements Interceptor {
 		}
 		
 		String id = ms.getId();
-		VersionLockerCache.MethodSignature vm = new MethodSignature(id, paramCls);
+		Cache.MethodSignature vm = new MethodSignature(id, paramCls);
 		VersionLocker versionLocker = versionLockerCache.getVersionLocker(vm);
 		if(null != versionLocker) {
 			return versionLocker;
