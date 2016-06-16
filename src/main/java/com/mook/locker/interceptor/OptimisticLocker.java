@@ -248,7 +248,7 @@ public class OptimisticLocker implements Interceptor {
 		// 这里去掉synchronized或者重入锁，因为这里的操作满足幂等性
 		// Here remove synchronized keyword or ReentrantLock, because it's a idempotent operation
 		if(null == mapperMap || mapperMap.isEmpty()) {
-			mapperMap = new HashMap<String, Class<?>>();
+			mapperMap = new HashMap<>();
 			Collection<Class<?>> mappers = ms.getConfiguration().getMapperRegistry().getMappers();
 			if(null != mappers && !mappers.isEmpty()) {
 				for (Class<?> me : mappers) {
