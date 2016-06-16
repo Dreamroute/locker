@@ -75,7 +75,7 @@ public class OptimisticLocker implements Interceptor {
 		try {
 			trueLocker = new OptimisticLocker().getClass().getDeclaredMethod("versionValue").getAnnotation(VersionLocker.class);
 		} catch (NoSuchMethodException | SecurityException e) {
-			throw new RuntimeException("The plugin init faild.");
+			throw new RuntimeException("The plugin init faild.", e);
 		}
 	}
 	
