@@ -72,7 +72,7 @@ public class OptimisticLocker implements Interceptor {
 	private static VersionLocker trueLocker;
 	static {
 		try {
-			trueLocker = new OptimisticLocker().getClass().getDeclaredMethod("versionValue").getAnnotation(VersionLocker.class);
+			trueLocker = OptimisticLocker.class.getDeclaredMethod("versionValue").getAnnotation(VersionLocker.class);
 		} catch (NoSuchMethodException | SecurityException e) {
 			throw new RuntimeException("The plugin init faild.");
 		}
