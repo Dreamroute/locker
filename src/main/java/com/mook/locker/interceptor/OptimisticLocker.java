@@ -111,7 +111,7 @@ public class OptimisticLocker implements Interceptor {
 			BoundSql boundSql = (BoundSql) hm.getValue("delegate.boundSql");
 			
 			VersionLocker vl = getVersionLocker(ms, boundSql);
-			if(null != vl && vl.value() == false) {
+			if(null != vl && !vl.value()) {
 				return invocation.proceed();
 			}
 			
@@ -147,7 +147,7 @@ public class OptimisticLocker implements Interceptor {
 			BoundSql boundSql = (BoundSql) hm.getValue("boundSql");
 			
 			VersionLocker vl = getVersionLocker(ms, boundSql);
-			if(null != vl && vl.value() == false) {
+			if(null != vl && !vl.value()) {
 				return invocation.proceed();
 			}
 			

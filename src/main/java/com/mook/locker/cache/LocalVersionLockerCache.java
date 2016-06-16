@@ -34,11 +34,11 @@ public class LocalVersionLockerCache implements VersionLockerCache {
 		if(null == cache || cache.isEmpty()) {
 			return false;
 		}
-		boolean contain = cache.containsKey(vm);
-		if(true == contain && log.isDebugEnabled()) {
+		boolean containsMethodSignature = cache.containsKey(vm);
+		if(containsMethodSignature && log.isDebugEnabled()) {
 			log.debug("The method " + nameSpace + vm.getId() + "is hit in cache.");
 		}
-		return contain;
+		return containsMethodSignature;
 	}
 	
 	// 这里去掉synchronized或者重入锁，因为这里的操作满足幂等性
