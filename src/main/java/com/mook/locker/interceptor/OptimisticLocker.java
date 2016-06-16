@@ -89,7 +89,7 @@ public class OptimisticLocker implements Interceptor {
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public Object intercept(Invocation invocation) throws Exception {
 		
-		String versionColumn = null;
+		String versionColumn;
 		if(null == props || props.isEmpty()) {
 			versionColumn = "version";
 		} else {
@@ -238,7 +238,7 @@ public class OptimisticLocker implements Interceptor {
 		}
 		
 		String id = ms.getId();
-		VersionLocker versionLocker = null;
+		VersionLocker versionLocker;
 		VersionLockerCache.MethodSignature vm = new MethodSignature(id, paramCls);
 		versionLocker = versionLockerCache.getVersionLocker(vm);
 		if(null != versionLocker) {
@@ -261,7 +261,7 @@ public class OptimisticLocker implements Interceptor {
 		String nameSpace = id.substring(0, pos);
 		if(mapperMap.containsKey(nameSpace)) {
 			Class<?> mapper = mapperMap.get(nameSpace);
-			Method m = null;
+			Method m;
 			try {
 				m = mapper.getDeclaredMethod(id.substring(pos + 1), paramCls);
 				
