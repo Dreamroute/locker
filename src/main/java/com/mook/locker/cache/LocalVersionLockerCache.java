@@ -72,8 +72,7 @@ public class LocalVersionLockerCache implements VersionLockerCache {
 	private String getNameSpace(VersionLockerCache.MethodSignature vm) {
 		String id = vm.getId();
 		int pos = id.lastIndexOf(".");
-		String nameSpace = id.substring(0, pos);
-		return nameSpace;
+		return id.substring(0, pos);
 	}
 
 }
