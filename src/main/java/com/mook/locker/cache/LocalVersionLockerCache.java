@@ -28,7 +28,7 @@ public class LocalVersionLockerCache implements VersionLockerCache {
 	private ConcurrentHashMap<String, ConcurrentHashMap<VersionLockerCache.MethodSignature, VersionLocker>> caches = new ConcurrentHashMap<>();
 	
 	@Override
-	public boolean containMethodSinature(MethodSignature vm) {
+	public boolean containMethodSignature(MethodSignature vm) {
 		String nameSpace = getNameSpace(vm);
 		ConcurrentHashMap<VersionLockerCache.MethodSignature, VersionLocker> cache = caches.get(nameSpace);
 		if(null == cache || cache.isEmpty()) {

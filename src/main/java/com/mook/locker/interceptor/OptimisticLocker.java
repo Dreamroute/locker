@@ -271,7 +271,7 @@ public class OptimisticLocker implements Interceptor {
 			if(null == versionLocker) {
 				versionLocker = trueLocker;
 			}
-			if(!versionLockerCache.containMethodSinature(vm)) {
+			if(!versionLockerCache.containMethodSignature(vm)) {
 				versionLockerCache.cacheMethod(vm, versionLocker);
 			}
 			return versionLocker;
