@@ -238,9 +238,8 @@ public class OptimisticLocker implements Interceptor {
 		}
 		
 		String id = ms.getId();
-		VersionLocker versionLocker;
 		VersionLockerCache.MethodSignature vm = new MethodSignature(id, paramCls);
-		versionLocker = versionLockerCache.getVersionLocker(vm);
+		VersionLocker versionLocker = versionLockerCache.getVersionLocker(vm);
 		if(null != versionLocker) {
 			return versionLocker;
 		}
