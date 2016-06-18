@@ -51,6 +51,7 @@ import com.mook.locker.cache.Cache;
 import com.mook.locker.cache.Cache.MethodSignature;
 import com.mook.locker.cache.LocalVersionLockerCache;
 import com.mook.locker.cache.VersionLockerCache;
+import com.mook.locker.util.PluginUtil;
 
 /**
  * <p>MyBatis乐观锁插件<br>
@@ -100,7 +101,7 @@ public class OptimisticLocker implements Interceptor {
 		String interceptMethod = invocation.getMethod().getName();
 		if("prepare".equals(interceptMethod)) {
 			
-			StatementHandler handler = (StatementHandler) invocation.getTarget();
+			StatementHandler handler = (StatementHandler) PluginUtil.processTarget(invocation.getTarget());
 			MetaObject hm = SystemMetaObject.forObject(handler);
 			
 			MappedStatement ms = (MappedStatement) hm.getValue("delegate.mappedStatement");
@@ -135,7 +136,7 @@ public class OptimisticLocker implements Interceptor {
 			
 		} else if("setParameters".equals(interceptMethod)) {
 			
-			ParameterHandler handler = (ParameterHandler) invocation.getTarget();
+			ParameterHandler handler = (ParameterHandler) PluginUtil.processTarget(invocation.getTarget());
 			MetaObject hm = SystemMetaObject.forObject(handler);
 			
 			MappedStatement ms = (MappedStatement) hm.getValue("mappedStatement");
