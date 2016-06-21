@@ -117,9 +117,9 @@ public class OptimisticLocker implements Interceptor {
 				return invocation.proceed();
 			}
 			
-			Object originalVersion = hm.getValue("delegate.boundSql.parameterObject.version");
+			Object originalVersion = hm.getValue("delegate.boundSql.parameterObject." + versionColumn);
 			Object versionIncr = castTypeAndOptValue(originalVersion, hm.getValue("delegate.boundSql.parameterObject"), ValueType.INCREASE);
-			hm.setValue("delegate.boundSql.parameterObject.version", versionIncr);
+			hm.setValue("delegate.boundSql.parameterObject." + versionColumn, versionIncr);
 			
 			String originalSql = (String) hm.getValue("delegate.boundSql.sql");
 			StringBuilder builder = new StringBuilder(originalSql);
