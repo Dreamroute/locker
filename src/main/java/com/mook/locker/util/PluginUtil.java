@@ -26,7 +26,8 @@ public final class PluginUtil {
 	
 	/**
 	 * <p>Recursive get the original target object.
-	 * <p>If integrate more than a plugin, maybe there are conflict in these plugins, because plugin will proxy the object.
+	 * <p>If integrate more than a plugin, maybe there are conflict in these plugins, because plugin will proxy the object.<br>
+	 * So, here get the orignal target object
 	 * 
 	 * @param target proxy-object
 	 * @return original target object
