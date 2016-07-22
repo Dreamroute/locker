@@ -272,8 +272,7 @@ public class OptimisticLocker implements Interceptor {
 			Class<?> mapper = mapperMap.get(nameSpace);
 			Method m;
 			try {
-				m = mapper.getDeclaredMethod(id.substring(pos + 1), paramCls);
-				
+				m = mapper.getMethod(id.substring(pos + 1), paramCls);
 			} catch (NoSuchMethodException | SecurityException e) {
 				throw new RuntimeException("The Map type param error." + e, e);
 			}
