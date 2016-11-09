@@ -15,7 +15,7 @@ public interface UserMapper {
 	// 参数为单个参数方式(推荐使用方式2)
 	Integer updateUser(@Param("name") String name, @Param("password") String password, @Param("version") Long version, @Param("id") Integer id);
 	
-	// 参数为Map方式(不推荐使用方式)
+	// 参数为Map方式(不推荐使用方式，不够直观)
 	Integer updateUser(Map<Object, Object> user);
 	
 	// 单个参数未带@Param，报错(严重不推荐使用方式)
