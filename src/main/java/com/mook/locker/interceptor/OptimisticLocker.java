@@ -84,7 +84,7 @@ public class OptimisticLocker implements Interceptor {
 		try {
 			trueLocker = OptimisticLocker.class.getDeclaredMethod("versionValue").getAnnotation(VersionLocker.class);
 		} catch (NoSuchMethodException | SecurityException e) {
-			throw new RuntimeException("The plugin init faild.", e);
+			throw new RuntimeException("The plugin init faild." + e, e);
 		}
 	}
 	
@@ -285,17 +285,17 @@ public class OptimisticLocker implements Interceptor {
 			}
 			return versionLocker;
 		} else {
+			if(log.isDebugEnabled())
+				log.debug("Config info error, maybe you have not config the Mapper interface");
 			throw new RuntimeException("Config info error, maybe you have not config the Mapper interface");
 		}
 	}
 
 	@Override
 	public Object plugin(Object target) {
-		if (target instanceof StatementHandler || target instanceof ParameterHandler) {
+		if (target instanceof StatementHandler || target instanceof ParameterHandler)
             return Plugin.wrap(target, this);
-        } else {
-            return target;
-        }
+		return target;
 	}
 
 	@Override
