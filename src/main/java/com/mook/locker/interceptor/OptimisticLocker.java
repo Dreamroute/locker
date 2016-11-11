@@ -171,7 +171,7 @@ public class OptimisticLocker implements Interceptor {
 			if(parameterObject instanceof MapperMethod.ParamMap<?>) {
 				MapperMethod.ParamMap<?> paramMap = (MapperMethod.ParamMap<?>) parameterObject;
 				if(!paramMap.containsKey(versionColumn)) {
-					throw new TypeException("All the base type parameters must add MyBatis's @Param Annotaion");
+					throw new TypeException("All the primitive type parameters must add MyBatis's @Param Annotaion");
 				}
 			}
 	        Object value = pm.getValue(versionColumn);
@@ -186,9 +186,7 @@ public class OptimisticLocker implements Interceptor {
 	 			PreparedStatement ps = (PreparedStatement) invocation.getArgs()[0];
 	 			Object val = castTypeAndOptValue(value, parameterObject, ValueType.DECREASE);
 	 			typeHandler.setParameter(ps, parameterMappings.size() + 1, val, jdbcType);
-	 		} catch (TypeException e) {
-	 			throw new TypeException("Could not set parameters for mapping: " + parameterMappings + ". Cause: " + e, e);
-	 		} catch (SQLException e) {
+	 		} catch (TypeException | SQLException e) {
 	 			throw new TypeException("Could not set parameters for mapping: " + parameterMappings + ". Cause: " + e, e);
 	 		}
 	 		return result;
