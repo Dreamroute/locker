@@ -109,35 +109,38 @@ public class OptimisticLocker implements Interceptor {
 		String interceptMethod = invocation.getMethod().getName();
 		if("prepare".equals(interceptMethod)) {
 			
-			StatementHandler handler = (StatementHandler) PluginUtil.processTarget(invocation.getTarget());
-			MetaObject hm = SystemMetaObject.forObject(handler);
+			StatementHandler routingHandler = (StatementHandler) PluginUtil.processTarget(invocation.getTarget());
+			MetaObject routingMeta = SystemMetaObject.forObject(routingHandler);
+			StatementHandler preparedHandler = (StatementHandler) routingMeta.getValue("delegate");
+			MetaObject hm = SystemMetaObject.forObject(preparedHandler);
 			
-			MappedStatement ms = (MappedStatement) hm.getValue("delegate.mappedStatement");
+			MappedStatement ms = (MappedStatement) hm.getValue("mappedStatement");
 			SqlCommandType sqlCmdType = ms.getSqlCommandType();
 			if(sqlCmdType != SqlCommandType.UPDATE) {
 				return invocation.proceed();
 			}
 			
-			BoundSql boundSql = (BoundSql) hm.getValue("delegate.boundSql");
+			BoundSql boundSql = (BoundSql) hm.getValue("boundSql");
 			
 			VersionLocker vl = getVersionLocker(ms, boundSql);
 			if(null != vl && !vl.value()) {
 				return invocation.proceed();
 			}
 			
-			Object originalVersion = hm.getValue("delegate.boundSql.parameterObject." + versionColumn);
-			Object versionIncr = castTypeAndOptValue(originalVersion, hm.getValue("delegate.boundSql.parameterObject"), ValueType.INCREASE);
-			hm.setValue("delegate.boundSql.parameterObject." + versionColumn, versionIncr);
+			Object originalVersion = hm.getValue("boundSql.parameterObject." + versionColumn);
+			Object versionIncr = castTypeAndOptValue(originalVersion, hm.getValue("boundSql.parameterObject"), ValueType.INCREASE);
+			hm.setValue("boundSql.parameterObject." + versionColumn, versionIncr);
 			
-			String originalSql = (String) hm.getValue("delegate.boundSql.sql");
+			String originalSql = (String) hm.getValue("boundSql.sql");
 			StringBuilder builder = new StringBuilder(originalSql);
 			builder.append(" and ");
 			builder.append(versionColumn);
 			builder.append(" = ?");
-			hm.setValue("delegate.boundSql.sql", builder.toString());
+			hm.setValue("boundSql.sql", builder.toString());
 			
 			if(log.isDebugEnabled()) {
 				log.debug("==> originalSql: " + originalSql);
+				System.err.println(originalSql);
 			}
 			
 			return invocation.proceed();
