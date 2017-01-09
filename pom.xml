@@ -3,7 +3,6 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<name>locker</name>
-	<url />
 
 	<groupId>com.mook</groupId>
 	<artifactId>locker</artifactId>
@@ -17,12 +16,11 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>com.mook</groupId>
-			<artifactId>sqlprinter</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+			<version>5.1.23</version>
+			<scope>provided</scope>
 		</dependency>
-
-		<!-- http://mvnrepository.com/artifact/org.mybatis/mybatis -->
 		<dependency>
 			<groupId>org.mybatis</groupId>
 			<artifactId>mybatis</artifactId>

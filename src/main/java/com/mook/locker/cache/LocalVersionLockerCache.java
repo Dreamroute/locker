@@ -29,6 +29,7 @@ import org.apache.ibatis.logging.Log;
 import org.apache.ibatis.logging.LogFactory;
 
 import com.mook.locker.annotation.VersionLocker;
+import com.mook.locker.util.Constent;
 
 public class LocalVersionLockerCache implements VersionLockerCache {
 	
@@ -44,13 +45,11 @@ public class LocalVersionLockerCache implements VersionLockerCache {
 		}
 		boolean containsMethodSignature = cache.containsKey(ms);
 		if(containsMethodSignature && log.isDebugEnabled()) {
-			log.debug("The method " + nameSpace + ms.getId() + "is hit in cache.");
+			log.debug(Constent.LogPrefix + "The method " + nameSpace + ms.getId() + "is hit in cache.");
 		}
 		return containsMethodSignature;
 	}
 	
-	// 这里去掉synchronized或者重入锁，因为这里的操作满足幂等性
-	// Here remove synchronized keyword or ReentrantLock, because it's a idempotent operation
 	@Override
 	public void cacheMethod(VersionLockerCache.MethodSignature vm, VersionLocker locker) {
 		String nameSpace = getNameSpace(vm);
@@ -60,7 +59,7 @@ public class LocalVersionLockerCache implements VersionLockerCache {
 			cache.put(vm, locker);
 			caches.put(nameSpace, cache);
 			if(log.isDebugEnabled()) {
-				log.debug("Locker debug info ==> " + nameSpace + ": " + vm.getId() + " is cached.");
+				log.debug(Constent.LogPrefix + nameSpace + ": " + vm.getId() + " is cached.");
 			}
 		} else {
 			cache.put(vm, locker);
