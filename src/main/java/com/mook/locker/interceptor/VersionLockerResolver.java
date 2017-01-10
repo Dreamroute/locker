@@ -47,10 +47,10 @@ class VersionLockerResolver {
 	private static final Log log = LogFactory.getLog(VersionLockerResolver.class);
 	
 	/** versionLockerCache, mapperMap are ConcurrentHashMap, thread safe**/
-	static VersionLockerCache versionLockerCache = new LocalVersionLockerCache();
-	static Map<String, Class<?>> mapperMap = new ConcurrentHashMap<>();
+	private static final VersionLockerCache versionLockerCache = new LocalVersionLockerCache();
+	private static final Map<String, Class<?>> mapperMap = new ConcurrentHashMap<>();
 	
-	static VersionLocker trueLocker, falseLocker;
+	private static final VersionLocker trueLocker, falseLocker;
 	static {
 		try {
 			trueLocker = VersionLockerResolver.class.getDeclaredMethod("trueVersionValue").getAnnotation(VersionLocker.class);
@@ -75,9 +75,7 @@ class VersionLockerResolver {
 		Object paramObj = boundSql.getParameterObject();
 		Class<?>[] paramCls = null;
 		
-		/******************下面处理参数只能按照下面3个的顺序***********************/
 		/******************Process param must order by below ***********************/
-		// 1、处理@Param标记的参数
 		// 1、Process @Param param
 		if(paramObj instanceof MapperMethod.ParamMap<?>) {
 			MapperMethod.ParamMap<?> mmp = (MapperMethod.ParamMap<?>) paramObj;
@@ -90,12 +88,10 @@ class VersionLockerResolver {
 				}
 			}
 			
-		// 2、处理Map类型参数
 		// 2、Process Map param
 		} else if (paramObj instanceof Map) {
 			paramCls = new Class<?>[] {Map.class};
 			
-		// 3、处理POJO实体对象类型的参数
 		// 3、Process POJO entity param
 		} else {
 			paramCls = new Class<?>[] {paramObj.getClass()};
