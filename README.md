@@ -31,7 +31,7 @@ En Doc: [https://github.com/Dreamroute/locker/wiki/English-Documet](https://gith
 
 ### 2. 对插件配置的说明： ###
 	
-上面对插件的配置默认数据库的乐观锁列对应的Java属性为version。这里可以自定义属性命，例如：
+上面对插件的配置默认数据库的乐观锁列对应的Java属性为version。这里可以自定义属性名，例如：
 
 	<plugins>
 		<plugin interceptor="com.mook.locker.interceptor.OptimisticLocker">
