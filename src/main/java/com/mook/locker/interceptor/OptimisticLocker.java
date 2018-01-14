@@ -53,8 +53,10 @@ import com.mook.locker.util.Constent;
 import com.mook.locker.util.PluginUtil;
 
 /**
- * <p>MyBatis乐观锁插件<br>
- * <p>MyBatis Optimistic Locker Plugin<br>
+ * <p>
+ * MyBatis乐观锁插件<br>
+ * <p>
+ * MyBatis Optimistic Locker Plugin<br>
  * 
  * @author 342252328@qq.com
  * @date 2016-05-27
@@ -62,105 +64,104 @@ import com.mook.locker.util.PluginUtil;
  * @since JDK1.7
  *
  */
-@Intercepts({
-	@Signature(type = StatementHandler.class, method = "prepare", args = {Connection.class}),
-	@Signature(type = ParameterHandler.class, method = "setParameters", args = {PreparedStatement.class})
-})
+@Intercepts({ @Signature(type = StatementHandler.class, method = "prepare", args = { Connection.class }),
+        @Signature(type = ParameterHandler.class, method = "setParameters", args = { PreparedStatement.class }) })
 public class OptimisticLocker implements Interceptor {
-	
-	private static final Log log = LogFactory.getLog(OptimisticLocker.class);
-	private Properties props = null;
-	
-	@Override
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public Object intercept(Invocation invocation) throws Exception {
-		
-		String versionColumn;
-		if(null == props || props.isEmpty()) {
-			versionColumn = "version";
-		} else {
-			versionColumn = props.getProperty("versionColumn", "version");
-		}
-		
-		String interceptMethod = invocation.getMethod().getName();
-		if("prepare".equals(interceptMethod)) {
-			
-			StatementHandler routingHandler = (StatementHandler) PluginUtil.processTarget(invocation.getTarget());
-			MetaObject routingMeta = SystemMetaObject.forObject(routingHandler);
-			MetaObject hm = routingMeta.metaObjectForProperty("delegate");
-			
-			VersionLocker vl = VersionLockerResolver.resolve(hm);
-			if(null != vl && !vl.value()) {
-				return invocation.proceed();
-			}
-			
-			String originalSql = (String) hm.getValue("boundSql.sql");
-			StringBuilder builder = new StringBuilder(originalSql);
-			builder.append(" AND ");
-			builder.append(versionColumn);
-			builder.append(" = ?");
-			hm.setValue("boundSql.sql", builder.toString());
-			
-		} else if("setParameters".equals(interceptMethod)) {
-			
-			ParameterHandler handler = (ParameterHandler) PluginUtil.processTarget(invocation.getTarget());
-			MetaObject hm = SystemMetaObject.forObject(handler);
-			
-			VersionLocker vl = VersionLockerResolver.resolve(hm);
-			if(null != vl && !vl.value()) {
-				return invocation.proceed();
-			}
-			
-			BoundSql boundSql = (BoundSql) hm.getValue("boundSql");
-			Object parameterObject = boundSql.getParameterObject();
-			if(parameterObject instanceof MapperMethod.ParamMap<?>) {
-				MapperMethod.ParamMap<?> paramMap = (MapperMethod.ParamMap<?>) parameterObject;
-				if(!paramMap.containsKey(versionColumn)) {
-					throw new TypeException("All the primitive type parameters must add MyBatis's @Param Annotaion");
-				}
-			}
-			
-			Configuration configuration = ((MappedStatement) hm.getValue("mappedStatement")).getConfiguration();
-			MetaObject pm = configuration.newMetaObject(parameterObject);
-	        Object value = pm.getValue(versionColumn);
-	        ParameterMapping versionMapping = new ParameterMapping.Builder(configuration, versionColumn, Object.class).build();
-			TypeHandler typeHandler = versionMapping.getTypeHandler();
-	        JdbcType jdbcType = versionMapping.getJdbcType();
-	        
-	        if (value == null && jdbcType == null) {
-	        	 jdbcType = configuration.getJdbcTypeForNull();
-	        }
-	        
-	        int versionLocation = boundSql.getParameterMappings().size() + 1;
-	 		try {
-	 			PreparedStatement ps = (PreparedStatement) invocation.getArgs()[0];
-	 			typeHandler.setParameter(ps, versionLocation, value, jdbcType);
-	 		} catch (TypeException | SQLException e) {
-	 			throw new TypeException("set parameter 'version' faild, Cause: " + e, e);
-	 		}
-	 		
-	 		if(value.getClass() != Long.class && value.getClass() != long.class) {
-	 			if(log.isDebugEnabled()) {
-	 				log.error(Constent.LogPrefix + "property type error, the type of version property must be Long or long.");
-	 			}
-	 		}
-	 		
-	 		// increase version
-	 		pm.setValue(versionColumn, (long) value + 1);
-		}
-		return invocation.proceed();
-	}
 
-	@Override
-	public Object plugin(Object target) {
-		if (target instanceof StatementHandler || target instanceof ParameterHandler)
+    private static final Log log = LogFactory.getLog(OptimisticLocker.class);
+    private Properties props = null;
+
+    @Override
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public Object intercept(Invocation invocation) throws Exception {
+
+        String versionColumn;
+        if (null == props || props.isEmpty()) {
+            versionColumn = "version";
+        } else {
+            versionColumn = props.getProperty("versionColumn", "version");
+        }
+
+        String interceptMethod = invocation.getMethod().getName();
+        if ("prepare".equals(interceptMethod)) {
+
+            StatementHandler routingHandler = (StatementHandler) PluginUtil.processTarget(invocation.getTarget());
+            MetaObject routingMeta = SystemMetaObject.forObject(routingHandler);
+            MetaObject hm = routingMeta.metaObjectForProperty("delegate");
+
+            VersionLocker vl = VersionLockerResolver.resolve(hm);
+            if (null != vl && !vl.value()) {
+                return invocation.proceed();
+            }
+
+            String originalSql = (String) hm.getValue("boundSql.sql");
+            StringBuilder builder = new StringBuilder(originalSql);
+            builder.append(" AND ");
+            builder.append(versionColumn);
+            builder.append(" = ?");
+            hm.setValue("boundSql.sql", builder.toString());
+
+        } else if ("setParameters".equals(interceptMethod)) {
+
+            ParameterHandler handler = (ParameterHandler) PluginUtil.processTarget(invocation.getTarget());
+            MetaObject hm = SystemMetaObject.forObject(handler);
+
+            VersionLocker vl = VersionLockerResolver.resolve(hm);
+            if (null != vl && !vl.value()) {
+                return invocation.proceed();
+            }
+
+            BoundSql boundSql = (BoundSql) hm.getValue("boundSql");
+            Object parameterObject = boundSql.getParameterObject();
+            if (parameterObject instanceof MapperMethod.ParamMap<?>) {
+                MapperMethod.ParamMap<?> paramMap = (MapperMethod.ParamMap<?>) parameterObject;
+                if (!paramMap.containsKey(versionColumn)) {
+                    throw new TypeException("All the primitive type parameters must add MyBatis's @Param Annotaion");
+                }
+            }
+
+            Configuration configuration = ((MappedStatement) hm.getValue("mappedStatement")).getConfiguration();
+            MetaObject pm = configuration.newMetaObject(parameterObject);
+            Object value = pm.getValue(versionColumn);
+            ParameterMapping versionMapping = new ParameterMapping.Builder(configuration, versionColumn, Object.class).build();
+            TypeHandler typeHandler = versionMapping.getTypeHandler();
+            JdbcType jdbcType = versionMapping.getJdbcType();
+
+            if (value == null && jdbcType == null) {
+                jdbcType = configuration.getJdbcTypeForNull();
+            }
+
+            int versionLocation = boundSql.getParameterMappings().size() + 1;
+            try {
+                PreparedStatement ps = (PreparedStatement) invocation.getArgs()[0];
+                typeHandler.setParameter(ps, versionLocation, value, jdbcType);
+            } catch (TypeException | SQLException e) {
+                throw new TypeException("set parameter 'version' faild, Cause: " + e, e);
+            }
+
+            if (value.getClass() != Long.class && value.getClass() != long.class) {
+                if (log.isDebugEnabled()) {
+                    log.error(Constent.LogPrefix + "property type error, the type of version property must be Long or long.");
+                }
+            }
+
+            // increase version
+            pm.setValue(versionColumn, (long) value + 1);
+        }
+        return invocation.proceed();
+    }
+
+    @Override
+    public Object plugin(Object target) {
+        if (target instanceof StatementHandler || target instanceof ParameterHandler)
             return Plugin.wrap(target, this);
-		return target;
-	}
+        return target;
+    }
 
-	@Override
-	public void setProperties(Properties properties) {
-		if(null != properties && !properties.isEmpty()) props = properties;
-	}
+    @Override
+    public void setProperties(Properties properties) {
+        if (null != properties && !properties.isEmpty())
+            props = properties;
+    }
 
 }

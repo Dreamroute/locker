@@ -46,20 +46,21 @@ public final class PluginUtil {
 	 * @param target proxy-object
 	 * @return original target object
 	 */
-	public static Object processTarget(Object target) {
-		if(Proxy.isProxyClass(target.getClass())) {
-			MetaObject mo = SystemMetaObject.forObject(target);
-			return processTarget(mo.getValue("h.target"));
-		}
-		
-		// must keep the result object is StatementHandler or ParameterHandler in Optimistic Loker plugin
-		if(!(target instanceof StatementHandler) && !(target instanceof ParameterHandler)) {
-			if(log.isDebugEnabled()) {
-				log.error(Constent.LogPrefix + "plugin init faild.");
-			}
-			throw new RuntimeException(Constent.LogPrefix + "plugin init faild.");
-		}
-		return target;
-	}
+    public static Object processTarget(Object target) {
+        if (Proxy.isProxyClass(target.getClass())) {
+            MetaObject mo = SystemMetaObject.forObject(target);
+            return processTarget(mo.getValue("h.target"));
+        }
+
+        // must keep the result object is StatementHandler or ParameterHandler in
+        // Optimistic Loker plugin
+        if (!(target instanceof StatementHandler) && !(target instanceof ParameterHandler)) {
+            if (log.isDebugEnabled()) {
+                log.error(Constent.LogPrefix + "plugin init faild.");
+            }
+            throw new RuntimeException(Constent.LogPrefix + "plugin init faild.");
+        }
+        return target;
+    }
 	
 }

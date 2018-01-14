@@ -27,10 +27,10 @@ package com.mook.locker.exception;
  * Created by wyx on 2016/6/1.
  */
 public class UncachedMapperException extends Exception {
-	
-	private static final long serialVersionUID = -3239029321039349523L;
 
-	public UncachedMapperException() {
+    private static final long serialVersionUID = -3239029321039349523L;
+
+    public UncachedMapperException() {
         super();
     }
 

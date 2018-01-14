@@ -43,96 +43,103 @@ import com.mook.locker.cache.VersionLockerCache;
 import com.mook.locker.util.Constent;
 
 class VersionLockerResolver {
-	
-	private static final Log log = LogFactory.getLog(VersionLockerResolver.class);
-	
-	/** versionLockerCache, mapperMap are ConcurrentHashMap, thread safe**/
-	private static final VersionLockerCache versionLockerCache = new LocalVersionLockerCache();
-	private static final Map<String, Class<?>> mapperMap = new ConcurrentHashMap<>();
-	
-	private static final VersionLocker trueLocker, falseLocker;
-	static {
-		try {
-			trueLocker = VersionLockerResolver.class.getDeclaredMethod("trueVersionValue").getAnnotation(VersionLocker.class);
-			falseLocker = VersionLockerResolver.class.getDeclaredMethod("falseVersionValue").getAnnotation(VersionLocker.class);
-		} catch (NoSuchMethodException | SecurityException e) {
-			throw new RuntimeException("Optimistic Locker Plugin init faild." + e, e);
-		}
-	}
-	
-	@VersionLocker(true)
-	private void trueVersionValue() {}
-	@VersionLocker(false)
-	private void falseVersionValue() {}
-	
-	static VersionLocker resolve(MetaObject mo) {
-		
-		// if the method is not a 'update', return false
-		MappedStatement ms = (MappedStatement) mo.getValue("mappedStatement");
-		if(ms.getSqlCommandType() != SqlCommandType.UPDATE) return falseLocker;
-		
-		BoundSql boundSql = (BoundSql) mo.getValue("boundSql");
-		Object paramObj = boundSql.getParameterObject();
-		Class<?>[] paramCls = null;
-		
-		/******************Process param must order by below ***********************/
-		// 1、Process @Param param
-		if(paramObj instanceof MapperMethod.ParamMap<?>) {
-			MapperMethod.ParamMap<?> mmp = (MapperMethod.ParamMap<?>) paramObj;
-			if(null != mmp && !mmp.isEmpty()) {
-				paramCls = new Class<?>[mmp.size() >> 1];
-				int mmpLen = mmp.size() >> 1;
-				for(int i=0; i<mmpLen; i++) {
-					Object index = mmp.get("param" + (i + 1));
-					paramCls[i] = index.getClass();
-				}
-			}
-			
-		// 2、Process Map param
-		} else if (paramObj instanceof Map) {
-			paramCls = new Class<?>[] {Map.class};
-			
-		// 3、Process POJO entity param
-		} else {
-			paramCls = new Class<?>[] {paramObj.getClass()};
-		}
-		
-		String id = ms.getId();
-		Cache.MethodSignature vm = new Cache.MethodSignature(id, paramCls);
-		VersionLocker versionLocker = versionLockerCache.getVersionLocker(vm);
-		if(null != versionLocker) return versionLocker;
-		
-		if(null == mapperMap || mapperMap.isEmpty()) {
-			Collection<Class<?>> mappers = ms.getConfiguration().getMapperRegistry().getMappers();
-			if(null != mappers && !mappers.isEmpty()) {
-				for (Class<?> me : mappers) {
-					mapperMap.put(me.getName(), me);
-				}
-			}
-		}
-		
-		int pos = id.lastIndexOf(".");
-		String nameSpace = id.substring(0, pos);
-		if(!mapperMap.containsKey(nameSpace)) {
-			if(log.isDebugEnabled()) {
-				log.debug(Constent.LogPrefix + "Config info error, maybe you have not config the Mapper interface");
-				throw new RuntimeException("Config info error, maybe you have not config the Mapper interface");
-			}
-		}
-		Class<?> mapper = mapperMap.get(nameSpace);
-		Method m;
-		try {
-			m = mapper.getMethod(id.substring(pos + 1), paramCls);
-		} catch (NoSuchMethodException | SecurityException e) {
-			throw new RuntimeException("The Map type param error." + e, e);
-		}
-		versionLocker = m.getAnnotation(VersionLocker.class);
-		if(null == versionLocker) {
-			versionLocker = trueLocker;
-		}
-		if(!versionLockerCache.containMethodSignature(vm)) {
-			versionLockerCache.cacheMethod(vm, versionLocker);
-		}
-		return versionLocker;
-	}
+
+    private static final Log log = LogFactory.getLog(VersionLockerResolver.class);
+
+    /** versionLockerCache, mapperMap are ConcurrentHashMap, thread safe **/
+    private static final VersionLockerCache versionLockerCache = new LocalVersionLockerCache();
+    private static final Map<String, Class<?>> mapperMap = new ConcurrentHashMap<>();
+
+    private static final VersionLocker trueLocker, falseLocker;
+    static {
+        try {
+            trueLocker = VersionLockerResolver.class.getDeclaredMethod("trueVersionValue").getAnnotation(VersionLocker.class);
+            falseLocker = VersionLockerResolver.class.getDeclaredMethod("falseVersionValue").getAnnotation(VersionLocker.class);
+        } catch (NoSuchMethodException | SecurityException e) {
+            throw new RuntimeException("Optimistic Locker Plugin init faild." + e, e);
+        }
+    }
+
+    @VersionLocker(true)
+    private void trueVersionValue() {
+        // no thing to do
+    }
+
+    @VersionLocker(false)
+    private void falseVrsionValue() {
+        // no thing to do
+    }
+
+    static VersionLocker resolve(MetaObject mo) {
+
+        // if the method is not a 'update', return false
+        MappedStatement ms = (MappedStatement) mo.getValue("mappedStatement");
+        if (ms.getSqlCommandType() != SqlCommandType.UPDATE)
+            return falseLocker;
+
+        BoundSql boundSql = (BoundSql) mo.getValue("boundSql");
+        Object paramObj = boundSql.getParameterObject();
+        Class<?>[] paramCls = null;
+
+        /****************** Process param must order by below ***********************/
+        // 1、Process @Param param
+        if (paramObj instanceof MapperMethod.ParamMap<?>) {
+            MapperMethod.ParamMap<?> mmp = (MapperMethod.ParamMap<?>) paramObj;
+            if (null != mmp && !mmp.isEmpty()) {
+                paramCls = new Class<?>[mmp.size() >> 1];
+                int mmpLen = mmp.size() >> 1;
+                for (int i = 0; i < mmpLen; i++) {
+                    Object index = mmp.get("param" + (i + 1));
+                    paramCls[i] = index.getClass();
+                }
+            }
+
+            // 2、Process Map param
+        } else if (paramObj instanceof Map) {
+            paramCls = new Class<?>[] { Map.class };
+
+            // 3、Process POJO entity param
+        } else {
+            paramCls = new Class<?>[] { paramObj.getClass() };
+        }
+
+        String id = ms.getId();
+        Cache.MethodSignature vm = new Cache.MethodSignature(id, paramCls);
+        VersionLocker versionLocker = versionLockerCache.getVersionLocker(vm);
+        if (null != versionLocker)
+            return versionLocker;
+
+        if (null == mapperMap || mapperMap.isEmpty()) {
+            Collection<Class<?>> mappers = ms.getConfiguration().getMapperRegistry().getMappers();
+            if (null != mappers && !mappers.isEmpty()) {
+                for (Class<?> me : mappers) {
+                    mapperMap.put(me.getName(), me);
+                }
+            }
+        }
+
+        int pos = id.lastIndexOf(".");
+        String nameSpace = id.substring(0, pos);
+        if (!mapperMap.containsKey(nameSpace)) {
+            if (log.isDebugEnabled()) {
+                log.debug(Constent.LogPrefix + "Config info error, maybe you have not config the Mapper interface");
+                throw new RuntimeException("Config info error, maybe you have not config the Mapper interface");
+            }
+        }
+        Class<?> mapper = mapperMap.get(nameSpace);
+        Method m;
+        try {
+            m = mapper.getMethod(id.substring(pos + 1), paramCls);
+        } catch (NoSuchMethodException | SecurityException e) {
+            throw new RuntimeException("The Map type param error." + e, e);
+        }
+        versionLocker = m.getAnnotation(VersionLocker.class);
+        if (null == versionLocker) {
+            versionLocker = trueLocker;
+        }
+        if (!versionLockerCache.containMethodSignature(vm)) {
+            versionLockerCache.cacheMethod(vm, versionLocker);
+        }
+        return versionLocker;
+    }
 }
