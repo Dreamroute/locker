@@ -100,6 +100,6 @@ En Doc: [https://github.com/Dreamroute/locker/wiki/English-Documet](https://gith
 	3.集齐这4个mybatis插件，可以达到与Hibernate，JPA媲美的开发效率，但是性能又优于Hibernate；
 
 ### 10.关于作者： ###
-	作者QQ：342252328
 	QQ讨论群：170660681
+	作者QQ：342252328
 	作者邮箱：342252328@qq.com
