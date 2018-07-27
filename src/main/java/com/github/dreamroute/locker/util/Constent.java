@@ -1,4 +1,4 @@
-package com.mook.locker.util;
+package com.github.dreamroute.locker.util;
 
 public interface Constent {
 

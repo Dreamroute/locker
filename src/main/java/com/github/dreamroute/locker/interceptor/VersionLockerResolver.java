@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.mook.locker.interceptor;
+package com.github.dreamroute.locker.interceptor;
 
 import java.lang.reflect.Method;
 import java.util.Collection;
@@ -36,11 +36,11 @@ import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.mapping.SqlCommandType;
 import org.apache.ibatis.reflection.MetaObject;
 
-import com.mook.locker.annotation.VersionLocker;
-import com.mook.locker.cache.Cache;
-import com.mook.locker.cache.LocalVersionLockerCache;
-import com.mook.locker.cache.VersionLockerCache;
-import com.mook.locker.util.Constent;
+import com.github.dreamroute.locker.annotation.VersionLocker;
+import com.github.dreamroute.locker.cache.Cache;
+import com.github.dreamroute.locker.cache.LocalVersionLockerCache;
+import com.github.dreamroute.locker.cache.VersionLockerCache;
+import com.github.dreamroute.locker.util.Constent;
 
 class VersionLockerResolver {
 
