@@ -2,7 +2,7 @@
 <!DOCTYPE mapper
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.mook.locker.misc.mapper.UserMapper">
+<mapper namespace="com.github.dreamroute.locker.misc.mapper.UserMapper">
 	
 	<!-- 这里的三个方法是模拟MyBatis Generator插件自动创建的代码，相当有参考价值 -->
 	

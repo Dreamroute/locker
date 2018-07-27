@@ -5,7 +5,7 @@
 <configuration>
 
 	<plugins>
-		<plugin interceptor="com.mook.locker.interceptor.OptimisticLocker"/>
+		<plugin interceptor="com.github.dreamroute.locker.interceptor.OptimisticLocker"/>
 	</plugins>
 	
 	<environments default="development">
