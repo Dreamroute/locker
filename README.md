@@ -12,13 +12,14 @@
 
 ![mybatis](http://mybatis.github.io/images/mybatis-logo.png)
 
-----------
+
+``` javascript
 <dependency>
     <groupId>com.github.dreamroute</groupId>
     <artifactId>locker</artifactId>
     <version>newest version</version>
 </dependency>
-----------
+```
 
 ## Document: ##
 En Doc: [https://github.com/Dreamroute/locker/wiki/English-Documet](https://github.com/Dreamroute/locker/wiki/English-Documet "en")<br />
