@@ -32,6 +32,8 @@ import org.apache.ibatis.logging.LogFactory;
 import org.apache.ibatis.reflection.MetaObject;
 import org.apache.ibatis.reflection.SystemMetaObject;
 
+import com.github.dreamroute.locker.exception.LockerException;
+
 public final class PluginUtil {
 	
 	private static final Log log = LogFactory.getLog(PluginUtil.class);
@@ -56,9 +58,9 @@ public final class PluginUtil {
         // Optimistic Loker plugin
         if (!(target instanceof StatementHandler) && !(target instanceof ParameterHandler)) {
             if (log.isDebugEnabled()) {
-                log.error(Constent.LogPrefix + "plugin init faild.");
+                log.error(Constent.LOG_PREFIX + "plugin init faild.");
             }
-            throw new RuntimeException(Constent.LogPrefix + "plugin init faild.");
+            throw new LockerException(Constent.LOG_PREFIX + "plugin init faild.");
         }
         return target;
     }

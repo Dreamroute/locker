@@ -139,10 +139,8 @@ public class OptimisticLocker implements Interceptor {
                 throw new TypeException("set parameter 'version' faild, Cause: " + e, e);
             }
 
-            if (value.getClass() != Long.class && value.getClass() != long.class) {
-                if (log.isDebugEnabled()) {
-                    log.error(Constent.LogPrefix + "property type error, the type of version property must be Long or long.");
-                }
+            if (value.getClass() != Long.class && value.getClass() != long.class && log.isDebugEnabled()) {
+                log.error(Constent.LOG_PREFIX + "property type error, the type of version property must be Long or long.");
             }
 
             // increase version

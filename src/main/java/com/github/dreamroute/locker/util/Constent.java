@@ -1,7 +1,9 @@
 package com.github.dreamroute.locker.util;
 
-public interface Constent {
+public class Constent {
+
+    private Constent() {}
 
     // optimistic lock plugin log prefix
-    String LogPrefix = "[[[[[[[[[[[-> [Optimistic Loker] <-]]]]]]]]]]]";
+    public static final String LOG_PREFIX = "[[[[[[[[[[[-> [Optimistic Loker] <-]]]]]]]]]]]";
 }

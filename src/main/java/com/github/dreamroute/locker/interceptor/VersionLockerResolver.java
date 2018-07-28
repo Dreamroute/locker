@@ -122,7 +122,7 @@ class VersionLockerResolver {
         String nameSpace = id.substring(0, pos);
         if (!mapperMap.containsKey(nameSpace)) {
             if (log.isDebugEnabled()) {
-                log.debug(Constent.LogPrefix + "Config info error, maybe you have not config the Mapper interface");
+                log.debug(Constent.LOG_PREFIX + "Config info error, maybe you have not config the Mapper interface");
                 throw new RuntimeException("Config info error, maybe you have not config the Mapper interface");
             }
         }

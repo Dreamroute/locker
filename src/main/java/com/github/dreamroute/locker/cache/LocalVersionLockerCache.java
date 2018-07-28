@@ -45,7 +45,7 @@ public class LocalVersionLockerCache implements VersionLockerCache {
         }
         boolean containsMethodSignature = cache.containsKey(ms);
         if (containsMethodSignature && log.isDebugEnabled()) {
-            log.debug(Constent.LogPrefix + "The method " + nameSpace + ms.getId() + "is hit in cache.");
+            log.debug(Constent.LOG_PREFIX + "The method " + nameSpace + ms.getId() + "is hit in cache.");
         }
         return containsMethodSignature;
     }
@@ -59,7 +59,7 @@ public class LocalVersionLockerCache implements VersionLockerCache {
             cache.put(vm, locker);
             caches.put(nameSpace, cache);
             if (log.isDebugEnabled()) {
-                log.debug(Constent.LogPrefix + nameSpace + ": " + vm.getId() + " is cached.");
+                log.debug(Constent.LOG_PREFIX + nameSpace + ": " + vm.getId() + " is cached.");
             }
         } else {
             cache.put(vm, locker);
@@ -78,7 +78,7 @@ public class LocalVersionLockerCache implements VersionLockerCache {
 
     private String getNameSpace(VersionLockerCache.MethodSignature vm) {
         String id = vm.getId();
-        int pos = id.lastIndexOf(".");
+        int pos = id.lastIndexOf('.');
         return id.substring(0, pos);
     }
 
