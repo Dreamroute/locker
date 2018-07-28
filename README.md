@@ -13,6 +13,9 @@
 ![mybatis](http://mybatis.github.io/images/mybatis-logo.png)
 
 
+## Document: ##
+
+### 0. dependency
 ``` javascript
 <dependency>
     <groupId>com.github.dreamroute</groupId>
@@ -21,7 +24,6 @@
 </dependency>
 ```
 
-## Document: ##
 En Doc: [https://github.com/Dreamroute/locker/wiki/English-Documet](https://github.com/Dreamroute/locker/wiki/English-Documet "en")<br />
 	
 ----------
