@@ -16,7 +16,7 @@
 ## Document: ##
 
 ### Get Start...
-``` javascript
+```
 <dependency>
     <groupId>com.github.dreamroute</groupId>
     <artifactId>locker</artifactId>
