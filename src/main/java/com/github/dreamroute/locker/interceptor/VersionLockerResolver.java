@@ -26,6 +26,7 @@ package com.github.dreamroute.locker.interceptor;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.ibatis.binding.MapperMethod;
@@ -76,7 +77,7 @@ class VersionLockerResolver {
 
         // if the method is not a 'update', return false
         MappedStatement ms = (MappedStatement) mo.getValue("mappedStatement");
-        if (ms.getSqlCommandType() != SqlCommandType.UPDATE)
+        if (!Objects.equals(ms.getSqlCommandType(), SqlCommandType.UPDATE))
             return falseLocker;
 
         BoundSql boundSql = (BoundSql) mo.getValue("boundSql");
