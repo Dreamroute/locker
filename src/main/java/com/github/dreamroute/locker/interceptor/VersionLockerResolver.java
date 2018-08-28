@@ -40,6 +40,7 @@ import com.github.dreamroute.locker.annotation.VersionLocker;
 import com.github.dreamroute.locker.cache.Cache;
 import com.github.dreamroute.locker.cache.LocalVersionLockerCache;
 import com.github.dreamroute.locker.cache.VersionLockerCache;
+import com.github.dreamroute.locker.exception.LockerException;
 import com.github.dreamroute.locker.util.Constent;
 
 class VersionLockerResolver {
@@ -50,24 +51,25 @@ class VersionLockerResolver {
     private static final VersionLockerCache versionLockerCache = new LocalVersionLockerCache();
     private static final Map<String, Class<?>> mapperMap = new ConcurrentHashMap<>();
 
-    private static final VersionLocker trueLocker, falseLocker;
+    private static final VersionLocker trueLocker;
+    private static final VersionLocker falseLocker;
     static {
         try {
             trueLocker = VersionLockerResolver.class.getDeclaredMethod("trueVersionValue").getAnnotation(VersionLocker.class);
             falseLocker = VersionLockerResolver.class.getDeclaredMethod("falseVersionValue").getAnnotation(VersionLocker.class);
         } catch (NoSuchMethodException | SecurityException e) {
-            throw new RuntimeException("Optimistic Locker Plugin init faild." + e, e);
+            throw new LockerException("Optimistic Locker Plugin init faild." + e, e);
         }
     }
 
     @VersionLocker(true)
     private void trueVersionValue() {
-        // no thing to do
+        // no thing to do.
     }
 
     @VersionLocker(false)
     private void falseVrsionValue() {
-        // no thing to do
+        // no thing to do.
     }
 
     static VersionLocker resolve(MetaObject mo) {
@@ -85,7 +87,7 @@ class VersionLockerResolver {
         // 1、Process @Param param
         if (paramObj instanceof MapperMethod.ParamMap<?>) {
             MapperMethod.ParamMap<?> mmp = (MapperMethod.ParamMap<?>) paramObj;
-            if (null != mmp && !mmp.isEmpty()) {
+            if (!mmp.isEmpty()) {
                 paramCls = new Class<?>[mmp.size() >> 1];
                 int mmpLen = mmp.size() >> 1;
                 for (int i = 0; i < mmpLen; i++) {
@@ -96,11 +98,11 @@ class VersionLockerResolver {
 
             // 2、Process Map param
         } else if (paramObj instanceof Map) {
-            paramCls = new Class<?>[] { Map.class };
+            paramCls = new Class<?>[] {Map.class};
 
             // 3、Process POJO entity param
         } else {
-            paramCls = new Class<?>[] { paramObj.getClass() };
+            paramCls = new Class<?>[] {paramObj.getClass()};
         }
 
         String id = ms.getId();
@@ -109,7 +111,7 @@ class VersionLockerResolver {
         if (null != versionLocker)
             return versionLocker;
 
-        if (null == mapperMap || mapperMap.isEmpty()) {
+        if (mapperMap.isEmpty()) {
             Collection<Class<?>> mappers = ms.getConfiguration().getMapperRegistry().getMappers();
             if (null != mappers && !mappers.isEmpty()) {
                 for (Class<?> me : mappers) {
@@ -118,20 +120,18 @@ class VersionLockerResolver {
             }
         }
 
-        int pos = id.lastIndexOf(".");
+        int pos = id.lastIndexOf('.');
         String nameSpace = id.substring(0, pos);
-        if (!mapperMap.containsKey(nameSpace)) {
-            if (log.isDebugEnabled()) {
-                log.debug(Constent.LOG_PREFIX + "Config info error, maybe you have not config the Mapper interface");
-                throw new RuntimeException("Config info error, maybe you have not config the Mapper interface");
-            }
+        if (!mapperMap.containsKey(nameSpace) && log.isDebugEnabled()) {
+            log.debug(Constent.LOG_PREFIX + "Config info error, maybe you have not config the Mapper interface");
+            throw new LockerException("Config info error, maybe you have not config the Mapper interface");
         }
         Class<?> mapper = mapperMap.get(nameSpace);
         Method m;
         try {
             m = mapper.getMethod(id.substring(pos + 1), paramCls);
         } catch (NoSuchMethodException | SecurityException e) {
-            throw new RuntimeException("The Map type param error." + e, e);
+            throw new LockerException("The Map type param error." + e, e);
         }
         versionLocker = m.getAnnotation(VersionLocker.class);
         if (null == versionLocker) {

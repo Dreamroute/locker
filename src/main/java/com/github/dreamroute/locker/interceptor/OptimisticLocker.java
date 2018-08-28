@@ -26,6 +26,7 @@ package com.github.dreamroute.locker.interceptor;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.Objects;
 import java.util.Properties;
 
 import org.apache.ibatis.binding.MapperMethod;
@@ -69,18 +70,16 @@ import com.github.dreamroute.locker.util.PluginUtil;
 public class OptimisticLocker implements Interceptor {
 
     private static final Log log = LogFactory.getLog(OptimisticLocker.class);
-    private Properties props = null;
+    private String versionColumn;
+    
+    @Override
+    public void setProperties(Properties properties) {
+        versionColumn = properties.getProperty("versionColumn", "version");
+    }
 
     @Override
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public Object intercept(Invocation invocation) throws Exception {
-
-        String versionColumn;
-        if (null == props || props.isEmpty()) {
-            versionColumn = "version";
-        } else {
-            versionColumn = props.getProperty("versionColumn", "version");
-        }
 
         String interceptMethod = invocation.getMethod().getName();
         if ("prepare".equals(interceptMethod)) {
@@ -139,7 +138,7 @@ public class OptimisticLocker implements Interceptor {
                 throw new TypeException("set parameter 'version' faild, Cause: " + e, e);
             }
 
-            if (value.getClass() != Long.class && value.getClass() != long.class && log.isDebugEnabled()) {
+            if (!Objects.equals(value.getClass(), Long.class) && Objects.equals(value.getClass(), long.class) && log.isDebugEnabled()) {
                 log.error(Constent.LOG_PREFIX + "property type error, the type of version property must be Long or long.");
             }
 
@@ -154,12 +153,6 @@ public class OptimisticLocker implements Interceptor {
         if (target instanceof StatementHandler || target instanceof ParameterHandler)
             return Plugin.wrap(target, this);
         return target;
-    }
-
-    @Override
-    public void setProperties(Properties properties) {
-        if (null != properties && !properties.isEmpty())
-            props = properties;
     }
 
 }

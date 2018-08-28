@@ -35,19 +35,22 @@ import org.apache.ibatis.reflection.SystemMetaObject;
 import com.github.dreamroute.locker.exception.LockerException;
 
 public final class PluginUtil {
-	
-	private static final Log log = LogFactory.getLog(PluginUtil.class);
-	
-	private PluginUtil() {} // private constructor
-	
-	/**
-	 * <p>Recursive get the original target object.
-	 * <p>If integrate more than a plugin, maybe there are conflict in these plugins, because plugin will proxy the object.<br>
-	 * So, here get the orignal target object
-	 * 
-	 * @param target proxy-object
-	 * @return original target object
-	 */
+
+    private static final Log log = LogFactory.getLog(PluginUtil.class);
+
+    private PluginUtil() {} // private constructor
+
+    /**
+     * <p>
+     * Recursive get the original target object.
+     * <p>
+     * If integrate more than a plugin, maybe there are conflict in these plugins,
+     * because plugin will proxy the object.<br>
+     * So, here get the orignal target object
+     * 
+     * @param target proxy-object
+     * @return original target object
+     */
     public static Object processTarget(Object target) {
         if (Proxy.isProxyClass(target.getClass())) {
             MetaObject mo = SystemMetaObject.forObject(target);
@@ -64,5 +67,5 @@ public final class PluginUtil {
         }
         return target;
     }
-	
+
 }
