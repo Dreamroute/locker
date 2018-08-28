@@ -54,10 +54,8 @@ import com.github.dreamroute.locker.util.Constent;
 import com.github.dreamroute.locker.util.PluginUtil;
 
 /**
- * <p>
- * MyBatis乐观锁插件<br>
- * <p>
- * MyBatis Optimistic Locker Plugin<br>
+ * <p>MyBatis乐观锁插件
+ * <p>MyBatis Optimistic Locker Plugin
  * 
  * @author 342252328@qq.com
  * @date 2016-05-27
@@ -65,20 +63,22 @@ import com.github.dreamroute.locker.util.PluginUtil;
  * @since JDK1.7
  *
  */
-@Intercepts({ @Signature(type = StatementHandler.class, method = "prepare", args = { Connection.class }),
-        @Signature(type = ParameterHandler.class, method = "setParameters", args = { PreparedStatement.class }) })
+@Intercepts({
+    @Signature(type = StatementHandler.class, method = "prepare", args = {Connection.class, Integer.class}),
+    @Signature(type = ParameterHandler.class, method = "setParameters", args = {PreparedStatement.class}
+)})
 public class OptimisticLocker implements Interceptor {
 
     private static final Log log = LogFactory.getLog(OptimisticLocker.class);
     private String versionColumn;
-    
+
     @Override
     public void setProperties(Properties properties) {
         versionColumn = properties.getProperty("versionColumn", "version");
     }
 
     @Override
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public Object intercept(Invocation invocation) throws Exception {
 
         String interceptMethod = invocation.getMethod().getName();

@@ -68,7 +68,7 @@ class VersionLockerResolver {
     }
 
     @VersionLocker(false)
-    private void falseVrsionValue() {
+    private void falseVersionValue() {
         // no thing to do.
     }
 
