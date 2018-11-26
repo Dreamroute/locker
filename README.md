@@ -33,7 +33,7 @@
 ----------
 ### 1. 使用方式：在mybatis配置文件中加入如下配置，就完成了。 ###
 	<plugins>
-		<plugin interceptor="com.mook.locker.interceptor.OptimisticLocker"/>
+		<plugin interceptor="com.github.dreamroute.locker.interceptor.OptimisticLocker"/>
 	</plugins>
 
 ----------
