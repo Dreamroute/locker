@@ -42,6 +42,7 @@
         @Bean
         public OptimisticLocker locker() {
             OptimisticLocker locker = new OptimisticLocker();
+            // 不设置versionColumn，默认为version，而spring boot方式1.2-RELEASE必须要手动指定乐观锁字段列名，1.2-RELEASE之后可以不用指定，默认为version
             Properties props = new Properties();
             props.setProperty("versionColumn", "version");
             locker.setProperties(props);
@@ -75,6 +76,7 @@
 ### 4. 对version的值的说明： ###
 	1、当PreparedStatement将第一个version的值设置之后，插件内部会自动自增1，设置到第二个version上面去。
 	2、乐观锁的整个控制过程对用户而言是透明的，这和Hibernate的乐观锁很相似，用户不需要关心乐观锁的值。
+	3、用户在使用的时候只需要将实体内设置一个Long(long)或者Integer(int)类型的乐观锁字段，并且数据库也设置一个数字类型的字段（需要有初始值或者默认值，不能为空）
 
 ----------
 ### 5.插件原理描述： ###
@@ -84,7 +86,7 @@
 	update user set name = ?, password = ?, version = ? where id = ? and version = ?，
 	形式，用户也不用关心version前后值的问题，插件会将第二个version的值设置成为用户从数据库查询获得的值，
 	而第二个version会在第一个的基础之上自增1。所有的动作对用户来说是透明的，
-	用户丝毫不用关心version相关的问题，又插件自己完成这些功能。
+	用户丝毫不用关心version相关的问题，又插件自己完成这些功能。具体功能可以参考插件的测试类。
 
 ----------
 

@@ -75,6 +75,9 @@ public class OptimisticLocker implements Interceptor {
     @Override
     public void setProperties(Properties properties) {
         versionColumn = properties.getProperty("versionColumn", "version");
+        if (versionColumn == null || versionColumn.trim().length() == 0) {
+            versionColumn = "version";
+        }
     }
 
     @Override
