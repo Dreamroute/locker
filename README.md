@@ -20,7 +20,7 @@
 <dependency>
     <groupId>com.github.dreamroute</groupId>
     <artifactId>locker</artifactId>
-    <version>newest version</version>
+    <version>latest version</version>
 </dependency>
 ```
 
@@ -32,9 +32,23 @@
 
 ----------
 ### 1. 使用方式：在mybatis配置文件中加入如下配置，就完成了。 ###
+##### 1.传统Spring配置文件方式
 	<plugins>
 		<plugin interceptor="com.github.dreamroute.locker.interceptor.OptimisticLocker"/>
 	</plugins>
+##### 2.Spring Boot方式
+    @Configuration
+    public class CommonBeans {
+        @Bean
+        public OptimisticLocker locker() {
+            OptimisticLocker locker = new OptimisticLocker();
+            Properties props = new Properties();
+            props.setProperty("versionColumn", "version");
+            locker.setProperties(props);
+            return locker;
+        }
+    }
+    
 
 ----------
 
