@@ -23,6 +23,6 @@
  */
 package com.github.dreamroute.locker.cache;
 
-import com.github.dreamroute.locker.annotation.VersionLocker;
+import com.github.dreamroute.locker.annotation.Locker;
 
-public interface VersionLockerCache extends Cache<VersionLocker> {}
+public interface LockerCache extends Cache<Locker> {}

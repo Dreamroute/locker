@@ -4,7 +4,7 @@ import java.util.Map;
 
 import org.apache.ibatis.annotations.Param;
 
-import com.github.dreamroute.locker.annotation.VersionLocker;
+import com.github.dreamroute.locker.annotation.Locker;
 import com.github.dreamroute.locker.misc.domain.User;
 
 public interface UserMapper {
@@ -22,10 +22,10 @@ public interface UserMapper {
 	Integer updateUserError(String name, String password, Long version, Integer id);
 	
 	// 不参与乐观锁控制
-	@VersionLocker(false)
+	@Locker()
 	Integer updateUserNoVersionLocker(User user);
 
 	// 重置数据库数据
-	@VersionLocker(false)
+	@Locker()
 	void resetData(User user);
 }

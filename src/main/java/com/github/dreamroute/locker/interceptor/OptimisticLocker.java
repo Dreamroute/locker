@@ -49,7 +49,7 @@ import org.apache.ibatis.type.JdbcType;
 import org.apache.ibatis.type.TypeException;
 import org.apache.ibatis.type.TypeHandler;
 
-import com.github.dreamroute.locker.annotation.VersionLocker;
+import com.github.dreamroute.locker.annotation.Locker;
 import com.github.dreamroute.locker.util.Constent;
 import com.github.dreamroute.locker.util.PluginUtil;
 
@@ -91,8 +91,8 @@ public class OptimisticLocker implements Interceptor {
             MetaObject routingMeta = SystemMetaObject.forObject(routingHandler);
             MetaObject hm = routingMeta.metaObjectForProperty("delegate");
 
-            VersionLocker vl = VersionLockerResolver.resolve(hm);
-            if (null != vl && !vl.value()) {
+            Locker locker = VersionLockerResolver.resolve(hm);
+            if (locker == null || !locker.value()) {
                 return invocation.proceed();
             }
 
@@ -108,8 +108,8 @@ public class OptimisticLocker implements Interceptor {
             ParameterHandler handler = (ParameterHandler) PluginUtil.processTarget(invocation.getTarget());
             MetaObject hm = SystemMetaObject.forObject(handler);
 
-            VersionLocker vl = VersionLockerResolver.resolve(hm);
-            if (null != vl && !vl.value()) {
+            Locker locker = VersionLockerResolver.resolve(hm);
+            if (locker == null || !locker.value()) {
                 return invocation.proceed();
             }
 

@@ -30,11 +30,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.METHOD })
+@Target({ElementType.METHOD})
 @Documented
-public @interface VersionLocker {
-
-    // Plugin intercepte update method by default, but except marked by
-    // @VersionLocker(false)
+public @interface Locker {
     boolean value() default true;
 }

@@ -25,15 +25,13 @@ package com.github.dreamroute.locker.cache;
 
 import java.util.Arrays;
 
-import com.github.dreamroute.locker.annotation.VersionLocker;
-
 public interface Cache<T> {
 
-    boolean containMethodSignature(VersionLockerCache.MethodSignature vm);
+    boolean containMethodSignature(LockerCache.MethodSignature signature);
 
-    void cacheMethod(VersionLockerCache.MethodSignature vm, VersionLocker locker);
+    void cacheMethod(LockerCache.MethodSignature signature, T t);
 
-    T getVersionLocker(VersionLockerCache.MethodSignature vm);
+    T getVersionLocker(LockerCache.MethodSignature signature);
 
     class MethodSignature {
 
@@ -70,13 +68,14 @@ public interface Cache<T> {
 
         @Override
         public boolean equals(Object obj) {
-            if (!(obj instanceof MethodSignature)) {
-                return super.equals(obj);
-            }
+            if (obj == null)
+                return false;
+            if (this.getClass() != obj.getClass())
+                return false;
             MethodSignature ms = (MethodSignature) obj;
             // 对同一个方法的判断：1、方法名相同；2、参数列表相同
             // if the method signature is 'equal', must 2 conditions: 1.the method name be
-            // the same; 2.the parameters type be the same
+            // the same; 2.the parameters type must be the same
             return id.equals(ms.id) && Arrays.equals(params, ms.params);
         }
 

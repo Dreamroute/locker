@@ -37,10 +37,10 @@ import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.mapping.SqlCommandType;
 import org.apache.ibatis.reflection.MetaObject;
 
-import com.github.dreamroute.locker.annotation.VersionLocker;
+import com.github.dreamroute.locker.annotation.Locker;
 import com.github.dreamroute.locker.cache.Cache;
-import com.github.dreamroute.locker.cache.LocalVersionLockerCache;
-import com.github.dreamroute.locker.cache.VersionLockerCache;
+import com.github.dreamroute.locker.cache.LockerCacheImpl;
+import com.github.dreamroute.locker.cache.LockerCache;
 import com.github.dreamroute.locker.exception.LockerException;
 import com.github.dreamroute.locker.util.Constent;
 import com.github.dreamroute.reflect.MethodFactory;
@@ -49,37 +49,29 @@ class VersionLockerResolver {
 
     private static final Log log = LogFactory.getLog(VersionLockerResolver.class);
 
-    /** versionLockerCache, mapperMap are ConcurrentHashMap, thread safe **/
-    private static final VersionLockerCache versionLockerCache = new LocalVersionLockerCache();
+    private static final LockerCache lockerCache = new LockerCacheImpl();
     private static final Map<String, Class<?>> mapperMap = new ConcurrentHashMap<>();
 
-    private static final VersionLocker trueLocker;
-    private static final VersionLocker falseLocker;
+    private static final Locker falseLocker;
     static {
         try {
-            trueLocker = VersionLockerResolver.class.getDeclaredMethod("trueVersionValue").getAnnotation(VersionLocker.class);
-            falseLocker = VersionLockerResolver.class.getDeclaredMethod("falseVersionValue").getAnnotation(VersionLocker.class);
+            falseLocker = VersionLockerResolver.class.getDeclaredMethod("falseVersionValue").getAnnotation(Locker.class);
         } catch (NoSuchMethodException | SecurityException e) {
             throw new LockerException("Optimistic Locker Plugin init faild." + e, e);
         }
     }
 
-    @VersionLocker(true)
-    private void trueVersionValue() {
-        // no thing to do.
-    }
-
-    @VersionLocker(false)
+    @Locker(false)
     private void falseVersionValue() {
         // no thing to do.
     }
 
-    static VersionLocker resolve(MetaObject mo) {
+    static Locker resolve(MetaObject mo) {
 
         // if the method is not a 'update', return false
         MappedStatement ms = (MappedStatement) mo.getValue("mappedStatement");
         if (!Objects.equals(ms.getSqlCommandType(), SqlCommandType.UPDATE))
-            return falseLocker;
+            return null;
 
         BoundSql boundSql = (BoundSql) mo.getValue("boundSql");
         Object paramObj = boundSql.getParameterObject();
@@ -108,10 +100,10 @@ class VersionLockerResolver {
         }
 
         String id = ms.getId();
-        Cache.MethodSignature vm = new Cache.MethodSignature(id, paramCls);
-        VersionLocker versionLocker = versionLockerCache.getVersionLocker(vm);
-        if (null != versionLocker)
-            return versionLocker;
+        Cache.MethodSignature signature = new Cache.MethodSignature(id, paramCls);
+        Locker locker = lockerCache.getVersionLocker(signature);
+        if (null != locker)
+            return locker;
 
         if (mapperMap.isEmpty()) {
             Collection<Class<?>> mappers = ms.getConfiguration().getMapperRegistry().getMappers();
@@ -137,14 +129,14 @@ class VersionLockerResolver {
                 break;
             }
         }
-        versionLocker = m.getAnnotation(VersionLocker.class);
-        if (null == versionLocker) {
-            versionLocker = trueLocker;
+        locker = m.getAnnotation(Locker.class);
+        if (null == locker) {
+            locker = falseLocker;
         }
-        if (!versionLockerCache.containMethodSignature(vm)) {
-            versionLockerCache.cacheMethod(vm, versionLocker);
+        if (!lockerCache.containMethodSignature(signature)) {
+            lockerCache.cacheMethod(signature, locker);
         }
-        return versionLocker;
+        return locker;
     }
 
 }
