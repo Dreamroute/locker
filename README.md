@@ -1,4 +1,6 @@
-# MyBatis乐观锁插件 #
+# MyBatis乐观锁插件2.0，更加简便，更加强大 #
+
+##老版本MyBatis乐观锁插件1.x请移步至wiki文档： [1.x文档](https://github.com/Dreamroute/locker/wiki "1.x文档")
 
 ### MyBatis Optimistic Locker Plugin ###
 
@@ -20,11 +22,9 @@
 <dependency>
     <groupId>com.github.dreamroute</groupId>
     <artifactId>locker</artifactId>
-    <version>latest version</version>
+    <version>2.x-RELEASE</version>
 </dependency>
 ```
-
-### 0. En Doc: [https://github.com/Dreamroute/locker/wiki/English-Documet](https://github.com/Dreamroute/locker/wiki/English-Documet "en")<br />
 	
 ----------
 
