@@ -90,13 +90,13 @@ public class OptimisticLocker implements Interceptor {
             StatementHandler routingHandler = (StatementHandler) PluginUtil.processTarget(invocation.getTarget());
             MetaObject routingMeta = SystemMetaObject.forObject(routingHandler);
             MetaObject hm = routingMeta.metaObjectForProperty("delegate");
+            String originalSql = (String) hm.getValue("boundSql.sql");
 
             Locker locker = VersionLockerResolver.resolve(hm);
             if (locker == null || !locker.value()) {
                 return invocation.proceed();
             }
 
-            String originalSql = (String) hm.getValue("boundSql.sql");
             StringBuilder builder = new StringBuilder(originalSql);
             builder.append(" AND ");
             builder.append(versionColumn);

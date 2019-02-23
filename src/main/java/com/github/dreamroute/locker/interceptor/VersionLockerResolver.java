@@ -28,6 +28,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Pattern;
 
 import org.apache.ibatis.binding.MapperMethod;
 import org.apache.ibatis.logging.Log;
@@ -39,8 +40,8 @@ import org.apache.ibatis.reflection.MetaObject;
 
 import com.github.dreamroute.locker.annotation.Locker;
 import com.github.dreamroute.locker.cache.Cache;
-import com.github.dreamroute.locker.cache.LockerCacheImpl;
 import com.github.dreamroute.locker.cache.LockerCache;
+import com.github.dreamroute.locker.cache.LockerCacheImpl;
 import com.github.dreamroute.locker.exception.LockerException;
 import com.github.dreamroute.locker.util.Constent;
 import com.github.dreamroute.reflect.MethodFactory;
@@ -64,6 +65,14 @@ class VersionLockerResolver {
     @Locker(false)
     private void falseVersionValue() {
         // no thing to do.
+    }
+
+    static boolean resolve(MetaObject mo, String originalSql) {
+        MappedStatement ms = (MappedStatement) mo.getValue("mappedStatement");
+        if (Objects.equals(ms.getSqlCommandType(), SqlCommandType.UPDATE)) {
+            return Pattern.matches("\\s*?version\\s*?=\\s*?\\?\\s*?", originalSql);
+        }
+        return false;
     }
 
     static Locker resolve(MetaObject mo) {
