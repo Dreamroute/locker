@@ -49,7 +49,6 @@ import org.apache.ibatis.type.JdbcType;
 import org.apache.ibatis.type.TypeException;
 import org.apache.ibatis.type.TypeHandler;
 
-import com.github.dreamroute.locker.annotation.Locker;
 import com.github.dreamroute.locker.util.Constent;
 import com.github.dreamroute.locker.util.PluginUtil;
 
@@ -92,10 +91,9 @@ public class OptimisticLocker implements Interceptor {
             MetaObject hm = routingMeta.metaObjectForProperty("delegate");
             String originalSql = (String) hm.getValue("boundSql.sql");
 
-            Locker locker = VersionLockerResolver.resolve(hm);
-            if (locker == null || !locker.value()) {
+            boolean locker = VersionLockerResolver.resolve(hm, versionColumn);
+            if (!locker)
                 return invocation.proceed();
-            }
 
             StringBuilder builder = new StringBuilder(originalSql);
             builder.append(" AND ");
@@ -108,10 +106,9 @@ public class OptimisticLocker implements Interceptor {
             ParameterHandler handler = (ParameterHandler) PluginUtil.processTarget(invocation.getTarget());
             MetaObject hm = SystemMetaObject.forObject(handler);
 
-            Locker locker = VersionLockerResolver.resolve(hm);
-            if (locker == null || !locker.value()) {
+            boolean locker = VersionLockerResolver.resolve(hm, versionColumn);
+            if (!locker)
                 return invocation.proceed();
-            }
 
             BoundSql boundSql = (BoundSql) hm.getValue("boundSql");
             Object parameterObject = boundSql.getParameterObject();

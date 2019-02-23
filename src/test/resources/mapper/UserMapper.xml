@@ -15,10 +15,11 @@
 	</update>
 	
 	<update id="updateUserNoVersionLocker">
-		update smart_user set name = #{name}, password = #{password}, version = #{version} where id = #{id}
+		update smart_user set name = #{name}, password = #{password} where id = #{id}
 	</update>
 	
-	<update id="resetData">
-		update smart_user set name = #{name}, password = #{password}, version = #{version} where id = #{id}
-	</update>
+	<select id="selectById" parameterType="int" resultType="com.github.dreamroute.locker.misc.domain.User">
+	   select * from smart_user where id = #{id}
+	</select>
+	
 </mapper>

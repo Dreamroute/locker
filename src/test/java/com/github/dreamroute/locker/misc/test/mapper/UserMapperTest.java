@@ -3,13 +3,13 @@ package com.github.dreamroute.locker.misc.test.mapper;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 import org.apache.ibatis.binding.BindingException;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.session.SqlSessionFactoryBuilder;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -21,7 +21,7 @@ import com.github.dreamroute.locker.misc.mapper.UserMapper;
 public class UserMapperTest {
 	
 	private static SqlSession sqlSession = null;
-	private User user = new User();
+	private User user;
 	
 	@BeforeClass
 	public static void doInitTest() throws Exception {
@@ -30,28 +30,20 @@ public class UserMapperTest {
 		sqlSession = sqlSessionFactory.openSession(true);
 	}
 	
-	// 每次测试前都将数据库中的id为100的User的version设置成100
 	@Before
-	public void initPojo() throws Exception {
-		user.setId(100);
-		user.setName("test");
-		user.setPassword("test");
-		user.setVersion(100L);
-	}
-	
-	@After
-	public void resetDatabaseTest() {
-		user.setId(100);
-		user.setName("test");
-		user.setPassword("test");
-		user.setVersion(100L);
-		UserMapper userMapper = sqlSession.getMapper(UserMapper.class);
-		userMapper.resetData(user);
+	public void initTest() {
+	    UserMapper userMapper = sqlSession.getMapper(UserMapper.class);
+        user = userMapper.selectById(100);
+        String name = new Random().nextInt(100) + "";
+        user.setName(name);
 	}
 	
 	@Test
 	public void updateUserPojoTest() {
 		UserMapper userMapper = sqlSession.getMapper(UserMapper.class);
+		User user = userMapper.selectById(100);
+		String name = new Random().nextInt(100) + "";
+		user.setName(name);
 		Integer result = userMapper.updateUser(user);
 		Assert.assertEquals(1L, Long.parseLong(result + ""));
 		
