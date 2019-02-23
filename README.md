@@ -1,4 +1,4 @@
-# MyBatis乐观锁插件2.0，更加简便，更加强大 #
+# MyBatis乐观锁插件2.0，全面升级，更加简便，更加强大 #
 
 ## <font color="red">老版本MyBatis乐观锁插件1.x请移步至wiki文档:</font> [1.x文档](https://github.com/Dreamroute/locker/wiki "1.x文档")
 
@@ -90,15 +90,14 @@
 
 ----------
 
-~~123~~
 ### 6.默认约定： ###
 	1、本插件拦截的update语句的Statement都是PreparedStatement，仅针对这种方式的sql有效；
 	2、mapper.xml的<update>标签必须要与接口Mapper的方法对应上，也就是使用mybatis推荐的方式，
 	   但是多个接口可以对应一个mapper.xml的<update>标签；
 	3、本插件不会对sql的结果做任何操作，sql本身应该返回什么就是什么；
-	4、~~ 插件默认拦截所有update语句，如果用户对某个update不希望有乐观锁控制，那么在对应的mapper接口 ~~
-	   方法上面增加@VersionLocker(false)或者@VersionLocker(value = false),
-	   这样插件就不会对这个update做任何操作，等同于没有本插件；
+	4、插件拦截sql的原理（这个1.x有本质的区别，1.x文档请查看wiki）：首先是拦截update类型的sql，第二是sql中存在乐观锁字段，
+	        比如update x set name = #{name}, version = #{version} where id = #{id}，
+	   sql中存在version= #{version}，那么插件就会启动乐观锁，改写sql，如果不存在version = #{version}那么就不会，当然version字段名称可以自定义；
 	5、本插件目前暂时不支持批量更新的乐观锁，原因是由于批量更新在实际开发中应用场景不多，另外批量更新乐观锁开发难度比较大；
 
 ----------
