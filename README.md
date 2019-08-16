@@ -98,7 +98,6 @@
 	4、插件拦截sql的原理（这个1.x有本质的区别，1.x文档请查看wiki）：首先是拦截update类型的sql，第二是sql中存在乐观锁字段，
 	        比如update x set name = #{name}, version = #{version} where id = #{id}，
 	   sql中存在version= #{version}，那么插件就会启动乐观锁，改写sql，如果不存在version = #{version}那么就不会，当然version字段名称可以自定义；
-	5、本插件目前暂时不支持批量更新的乐观锁，原因是由于批量更新在实际开发中应用场景不多，另外批量更新乐观锁开发难度比较大；
 
 ----------
 
