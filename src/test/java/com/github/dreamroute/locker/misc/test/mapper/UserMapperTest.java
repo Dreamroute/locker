@@ -1,10 +1,7 @@
 package com.github.dreamroute.locker.misc.test.mapper;
 
-import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
-
+import com.github.dreamroute.locker.misc.domain.User;
+import com.github.dreamroute.locker.misc.mapper.UserMapper;
 import org.apache.ibatis.binding.BindingException;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.session.SqlSession;
@@ -15,8 +12,10 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.github.dreamroute.locker.misc.domain.User;
-import com.github.dreamroute.locker.misc.mapper.UserMapper;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
 
 public class UserMapperTest {
 	
@@ -80,5 +79,5 @@ public class UserMapperTest {
 		Integer result = userMapper.updateUserNoVersionLocker(user);
 		Assert.assertEquals(1L, Long.parseLong(result + ""));
 	}
-	
+
 }
