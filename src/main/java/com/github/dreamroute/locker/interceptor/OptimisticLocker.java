@@ -30,6 +30,7 @@ import java.util.Objects;
 import java.util.Properties;
 
 import org.apache.ibatis.binding.MapperMethod;
+import org.apache.ibatis.executor.Executor;
 import org.apache.ibatis.executor.parameter.ParameterHandler;
 import org.apache.ibatis.executor.statement.StatementHandler;
 import org.apache.ibatis.logging.Log;
@@ -49,6 +50,8 @@ import org.apache.ibatis.type.JdbcType;
 import org.apache.ibatis.type.TypeException;
 import org.apache.ibatis.type.TypeHandler;
 
+import com.alibaba.fastjson.JSON;
+import com.github.dreamroute.locker.exception.LockerException;
 import com.github.dreamroute.locker.util.Constent;
 import com.github.dreamroute.locker.util.PluginUtil;
 
@@ -64,8 +67,9 @@ import com.github.dreamroute.locker.util.PluginUtil;
  */
 @Intercepts({
     @Signature(type = StatementHandler.class, method = "prepare", args = {Connection.class, Integer.class}),
-    @Signature(type = ParameterHandler.class, method = "setParameters", args = {PreparedStatement.class}
-)})
+    @Signature(type = ParameterHandler.class, method = "setParameters", args = {PreparedStatement.class}),
+    @Signature(type = Executor.class, method = "update", args = {MappedStatement.class, Object.class})
+})
 public class OptimisticLocker implements Interceptor {
 
     private static final Log log = LogFactory.getLog(OptimisticLocker.class);
@@ -144,13 +148,24 @@ public class OptimisticLocker implements Interceptor {
 
             // increase version
             pm.setValue(versionColumn, (long) value + 1);
+        } else if ("update".equals(interceptMethod)) {
+            int result = (int) invocation.proceed();
+            MappedStatement ms = (MappedStatement) invocation.getArgs()[0];
+            BoundSql boundSql = ms.getBoundSql(null);
+            String sql = boundSql.getSql();
+            Object param = invocation.getArgs()[1];
+            String paramJson = JSON.toJSONString(param);
+            if (result == 0) {
+                throw new LockerException("[触发乐观锁，更新失败], 失败SQL: " + sql + ", 参数: " + paramJson);
+            }
+            return result;
         }
         return invocation.proceed();
     }
 
     @Override
     public Object plugin(Object target) {
-        if (target instanceof StatementHandler || target instanceof ParameterHandler)
+        if (target instanceof Executor || target instanceof StatementHandler || target instanceof ParameterHandler)
             return Plugin.wrap(target, this);
         return target;
     }

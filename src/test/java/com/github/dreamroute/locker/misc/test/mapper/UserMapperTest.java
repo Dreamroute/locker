@@ -46,12 +46,6 @@ public class UserMapperTest {
 		user.setName(name);
 		Integer result = userMapper.updateUser(user);
 		Assert.assertEquals(1L, Long.parseLong(result + ""));
-		
-//		打印结果如下：
-//		DEBUG - ==> originalSql: update smart_user set name = ?, password = ?, version = ? where id = ?
-//		DEBUG - ==>  Preparing: update smart_user set name = ?, password = ?, version = ? where id = ? and version = ? 
-//		DEBUG - ==> Parameters: test(String), test(String), 101(Long), 100(Integer), 100(Long)
-//		DEBUG - <==    Updates: 1
 	}
 	
 	@Test
@@ -59,12 +53,6 @@ public class UserMapperTest {
 		UserMapper userMapper = sqlSession.getMapper(UserMapper.class);
 		Integer result = userMapper.updateUser("test", "test", 100L, 100);
 		Assert.assertEquals(1L, Long.parseLong(result + ""));
-		
-//		打印结果如下：
-//		DEBUG - ==> originalSql: update smart_user set name = ?, password = ?, version = ? where id = ?
-//		DEBUG - ==>  Preparing: update smart_user set name = ?, password = ?, version = ? where id = ? and version = ? 
-//		DEBUG - ==> Parameters: test(String), test(String), 101(Long), 100(Integer), 100(Long)
-//		DEBUG - <==    Updates: 1
 	}
 	
 	@Test
@@ -77,12 +65,6 @@ public class UserMapperTest {
 		UserMapper userMapper = sqlSession.getMapper(UserMapper.class);
 		Integer result = userMapper.updateUser(param);
 		Assert.assertEquals(1L, Long.parseLong(result + ""));
-		
-//		打印结果如下：
-//		DEBUG - ==> originalSql: update smart_user set name = ?, password = ?, version = ? where id = ?
-//		DEBUG - ==>  Preparing: update smart_user set name = ?, password = ?, version = ? where id = ? and version = ? 
-//		DEBUG - ==> Parameters: test(String), test(String), 101(Long), 100(Integer), 100(Long)
-//		DEBUG - <==    Updates: 1
 	}
 	
 	@Test(expected = BindingException.class)
@@ -97,12 +79,6 @@ public class UserMapperTest {
 		UserMapper userMapper = sqlSession.getMapper(UserMapper.class);
 		Integer result = userMapper.updateUserNoVersionLocker(user);
 		Assert.assertEquals(1L, Long.parseLong(result + ""));
-		
-//		打印结果如下，原生sql未被修改：
-//		DEBUG - ==>  Preparing: update smart_user set name = ?, password = ?, version = ? where id = ? 
-//		DEBUG - ==> Parameters: test(String), test(String), 100(Long), 100(Integer)
-//		DEBUG - <==    Updates: 1
-
 	}
 	
 }
