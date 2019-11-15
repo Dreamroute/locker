@@ -93,5 +93,4 @@ public class UserMapperTest {
 	    int result = userMapper.insertUser(user);
 	    assertEquals(1, result);
 	}
-	
 }
