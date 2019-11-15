@@ -1,5 +1,7 @@
 package com.github.dreamroute.locker.misc.test.mapper;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
@@ -79,6 +81,17 @@ public class UserMapperTest {
 		UserMapper userMapper = sqlSession.getMapper(UserMapper.class);
 		Integer result = userMapper.updateUserNoVersionLocker(user);
 		Assert.assertEquals(1L, Long.parseLong(result + ""));
+	}
+	
+	@Test
+	public void insertUser() {
+	    User user = new User();
+	    user.setName("w.dehai");
+	    user.setPassword("123456");
+	    user.setVersion(1L);
+	    UserMapper userMapper = sqlSession.getMapper(UserMapper.class);
+	    int result = userMapper.insertUser(user);
+	    assertEquals(1, result);
 	}
 	
 }

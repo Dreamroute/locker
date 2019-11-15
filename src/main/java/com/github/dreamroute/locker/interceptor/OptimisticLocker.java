@@ -38,6 +38,7 @@ import org.apache.ibatis.logging.LogFactory;
 import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.mapping.ParameterMapping;
+import org.apache.ibatis.mapping.SqlCommandType;
 import org.apache.ibatis.plugin.Interceptor;
 import org.apache.ibatis.plugin.Intercepts;
 import org.apache.ibatis.plugin.Invocation;
@@ -149,16 +150,19 @@ public class OptimisticLocker implements Interceptor {
             // increase version
             pm.setValue(versionColumn, (long) value + 1);
         } else if ("update".equals(interceptMethod)) {
-            int result = (int) invocation.proceed();
             MappedStatement ms = (MappedStatement) invocation.getArgs()[0];
-            BoundSql boundSql = ms.getBoundSql(null);
-            String sql = boundSql.getSql();
-            Object param = invocation.getArgs()[1];
-            String paramJson = JSON.toJSONString(param);
-            if (result == 0) {
-                throw new LockerException("[触发乐观锁，更新失败], 失败SQL: " + sql + ", 参数: " + paramJson);
+            SqlCommandType sct = ms.getSqlCommandType();
+            if (sct.equals(SqlCommandType.UPDATE)) {
+                int result = (int) invocation.proceed();
+                BoundSql boundSql = ms.getBoundSql(null);
+                String sql = boundSql.getSql();
+                Object param = invocation.getArgs()[1];
+                String paramJson = JSON.toJSONString(param);
+                if (result == 0) {
+                    throw new LockerException("[触发乐观锁，更新失败], 失败SQL: " + sql + ", 参数: " + paramJson);
+                }
+                return result;
             }
-            return result;
         }
         return invocation.proceed();
     }

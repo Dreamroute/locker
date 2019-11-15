@@ -22,4 +22,8 @@
 	   select * from smart_user where id = #{id}
 	</select>
 	
+	<insert id="insertUser">
+	   insert into smart_user (name, password, version) values (#{name}, #{password}, #{version});
+	</insert>
+	
 </mapper>

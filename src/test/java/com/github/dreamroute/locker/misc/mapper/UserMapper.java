@@ -25,5 +25,8 @@ public interface UserMapper {
 	
 	// 根据id查询
 	User selectById(Integer id);
+	
+	// 新增
+	int insertUser(User user);
 
 }
