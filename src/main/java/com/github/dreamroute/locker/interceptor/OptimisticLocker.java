@@ -154,7 +154,6 @@ public class OptimisticLocker implements Interceptor {
             SqlCommandType sct = ms.getSqlCommandType();
             if (sct.equals(SqlCommandType.UPDATE)) {
                 int result = (int) invocation.proceed();
-                ms.getParameterMap();
                 Object param = invocation.getArgs()[1];
                 BoundSql boundSql = ms.getBoundSql(param);
                 String sql = boundSql.getSql();
