@@ -93,4 +93,13 @@ public class UserMapperTest {
 	    int result = userMapper.insertUser(user);
 	    assertEquals(1, result);
 	}
+	
+	@Test
+	public void updateIfConditionTest() {
+	    User user = new User();
+	    user.setName("ifif");
+	    UserMapper userMapper = sqlSession.getMapper(UserMapper.class);
+	    int result = userMapper.updateIfCondition(user);
+	    assertEquals(1, result);
+	}
 }

@@ -154,9 +154,10 @@ public class OptimisticLocker implements Interceptor {
             SqlCommandType sct = ms.getSqlCommandType();
             if (sct.equals(SqlCommandType.UPDATE)) {
                 int result = (int) invocation.proceed();
-                BoundSql boundSql = ms.getBoundSql(null);
-                String sql = boundSql.getSql();
+                ms.getParameterMap();
                 Object param = invocation.getArgs()[1];
+                BoundSql boundSql = ms.getBoundSql(param);
+                String sql = boundSql.getSql();
                 String paramJson = JSON.toJSONString(param);
                 if (result == 0) {
                     throw new LockerException("[触发乐观锁，更新失败], 失败SQL: " + sql + ", 参数: " + paramJson);

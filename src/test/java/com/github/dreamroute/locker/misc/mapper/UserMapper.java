@@ -28,5 +28,8 @@ public interface UserMapper {
 	
 	// 新增
 	int insertUser(User user);
+	
+	// 测试if标签
+	int updateIfCondition(@Param("user") User user);
 
 }

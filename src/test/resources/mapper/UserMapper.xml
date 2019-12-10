@@ -26,4 +26,14 @@
 	   insert into smart_user (name, password, version) values (#{name}, #{password}, #{version});
 	</insert>
 	
+	<update id="updateIfCondition" parameterType="com.github.dreamroute.locker.misc.domain.User">
+	   update smart_user
+	   <set>
+	       <if test = "user.name != null and user.name != ''">
+                name = #{user.name}	           
+	       </if>
+	   </set>
+	   where id = 100
+	</update>
+	
 </mapper>
