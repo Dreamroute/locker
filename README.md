@@ -66,7 +66,7 @@
 
 
 ### 4. 对version的值的说明： ###
-	1、当PreparedStatement将第一个version的值设置之后，插件内部会自动自增1，设置到第二个version上面去。
+	1、加入数据库的version列的值为0,PreparedStatement将两个'version'字段的值分别设置成这样:update table set version = 1 where id = 1 and version = 0 
 	2、乐观锁的整个控制过程对用户而言是透明的，这和Hibernate的乐观锁很相似，用户不需要关心乐观锁的值。
 	3、用户在使用的时候只需要将实体内设置一个Long(long)或者Integer(int)类型的乐观锁字段，并且数据库也设置一个数字类型的字段（需要有初始值或者默认值，不能为空）
 
