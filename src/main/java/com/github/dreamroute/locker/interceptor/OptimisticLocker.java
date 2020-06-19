@@ -143,12 +143,18 @@ public class OptimisticLocker implements Interceptor {
                 throw new TypeException("set parameter 'version' faild, Cause: " + e, e);
             }
 
-            if (!Objects.equals(value.getClass(), Long.class) && Objects.equals(value.getClass(), long.class) && log.isDebugEnabled()) {
-                log.error(Constent.LOG_PREFIX + "property type error, the type of version property must be Long or long.");
+            if (Objects.equals(value.getClass(), Long.class) || Objects.equals(value.getClass(), long.class) ) {
+                // increase version
+                pm.setValue(versionColumn, (long) value + 1);
+            }else if(Objects.equals(value.getClass(), Integer.class) || Objects.equals(value.getClass(), int.class)){
+                // increase version
+                pm.setValue(versionColumn, (int) value + 1);
+            }else{
+                if (log.isDebugEnabled()){
+                    log.error(Constent.LOG_PREFIX + "property type error, the type of version property must be Long or long or Integer or int.");
+                }
+                throw new TypeException(Constent.LOG_PREFIX + "property type error, the type of version property must be Long or long or Integer or int.");
             }
-
-            // increase version
-            pm.setValue(versionColumn, (long) value + 1);
         } else if ("update".equals(interceptMethod)) {
             MappedStatement ms = (MappedStatement) invocation.getArgs()[0];
             SqlCommandType sct = ms.getSqlCommandType();
