@@ -8,3 +8,8 @@
 /.idea
 /**/*.iml
 /.README.md.html
+/locker-spring-boot-starter/.flattened-pom.xml
+/locker-sample/.flattened-pom.xml
+/.flattened-pom.xml
+/locker-sample/target/
+/locker-spring-boot-starter/target/
