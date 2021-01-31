@@ -45,7 +45,7 @@ public interface UserMapper extends Mapper<User, Long> {
 }
 
 ```
-> 注意：由于mybatis有多种参数形式，为了减小插件开发的复杂度，只兼容对象方式的参数
+> 注意：由于mybatis有多种参数形式，为了减小插件开发的复杂度，只兼容对象方式的参数，单个参数和Map类型不兼容
 
 ----------
 
