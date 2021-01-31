@@ -31,7 +31,21 @@
     <plugin interceptor="com.github.dreamroute.locker.interceptor.LockerInterceptor" />
 </plugins>
 ```
-##### 3. 在mapper方法上加上`@Locker`注解，加了此注解插件才会拦截sql加入乐观锁
+##### 3. 在mapper方法上加上`@Locker`注解，加了此注解插件才会拦截sql加入乐观锁，举例：
+```
+public interface UserMapper extends Mapper<User, Long> {
+
+	@Locker
+	@Update("update smart_user set name = #{name}, version = #{version} where id = #{id}")
+	long updateUu(User user);
+
+	@Update("update smart_user set name = #{name}, version = #{version} where id = #{id}")
+	long updateUu2(User user);
+
+}
+
+```
+> 注意：由于mybatis有多种参数形式，为了减小插件开发的复杂度，只兼容对象方式的参数
 
 ----------
 
