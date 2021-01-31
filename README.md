@@ -1,4 +1,4 @@
-# MyBatis乐观锁插件2.0，全面升级，更加简便，更加强大 #
+# MyBatis乐观锁插件3.0，全面升级，更加简便，更加强大 #
 
 ## <font color="red">老版本MyBatis乐观锁插件1.x请移步至wiki文档:</font> [1.x文档](https://github.com/Dreamroute/locker/wiki/mybatis%E4%B9%90%E8%A7%82%E9%94%811.x%E6%96%87%E6%A1%A3 "1.x文档")
 
@@ -13,48 +13,32 @@
 ```
 <dependency>
     <groupId>com.github.dreamroute</groupId>
-    <artifactId>locker</artifactId>
-    <version>2.x-RELEASE</version>
+    <artifactId>locker-spring-boot-starter</artifactId>
+    <version>latest version</version>
 </dependency>
 ```
-	
+最新版本：[点击查看](https://search.maven.org/artifact/com.github.dreamroute/locker-spring-boot-starter)
 ----------
 
-	描述：本插件主要是为了解决MyBatis Generator自动生成的update标签不带乐观锁的问题，为开发带来比较简单优雅的实现方式。只要插件检测到你的sql是update类型的，并且sql中存在version = #{version}这样的内容，就会触发乐观锁改写你的sql语句
+	描述：本插件主要是为了解决MyBatis Generator自动生成的update标签不带乐观锁的问题，为开发带来比较简单优雅的实现方式。
 
 ----------
 ### 1. 使用方式：在mybatis配置文件中加入如下配置，就完成了。 ###
-##### 1.传统Spring配置文件方式
-	<plugins>
-		<plugin interceptor="com.github.dreamroute.locker.interceptor.OptimisticLocker"/>
-	</plugins>
-##### 2.Spring Boot方式
-    @Configuration
-    public class CommonBeans {
-        @Bean
-        public OptimisticLocker locker() {
-            OptimisticLocker locker = new OptimisticLocker();
-            // 不设置versionColumn，默认为version
-            Properties props = new Properties();
-            props.setProperty("versionColumn", "version");
-            locker.setProperties(props);
-            return locker;
-        }
-    }
-    
+##### 1.Spring Boot方式：引入`locker-spring-boot-starter`
+##### 2.传统Spring MVC配置文件方式
+```
+<plugins>
+    <plugin interceptor="com.github.dreamroute.locker.interceptor.LockerInterceptor" />
+</plugins>
+```
+##### 3. 在mapper方法上加上`@Locker`注解，加了此注解插件才会拦截sql加入乐观锁
 
 ----------
 
 ### 2. 对插件配置的说明： ###
 	
 上面对插件的配置默认数据库的乐观锁列对应的Java属性为version。这里可以自定义属性名，例如：
-
-	<plugins>
-		<plugin interceptor="com.mook.locker.interceptor.OptimisticLocker">
-			<property name="versionColumn" value="xxx"/>
-		</plugin>
-	</plugins>
-
+在Spring Boot应用中，可以在application.properties中配置`locker.version-column=你的列名`，默认`version`
 ----------
 
 ### 3. 效果： ###
@@ -66,7 +50,7 @@
 
 
 ### 4. 对version的值的说明： ###
-	1、加入数据库的version列的值为0,PreparedStatement将两个'version'字段的值分别设置成这样:update table set version = 1 where id = 1 and version = 0 
+	1、加入数据库的version列的值，举例，version为0, PreparedStatement将两个'version'字段的值分别设置成这样:update table set version = 1 where id = 1 and version = 0 
 	2、乐观锁的整个控制过程对用户而言是透明的，这和Hibernate的乐观锁很相似，用户不需要关心乐观锁的值。
 	3、用户在使用的时候只需要将实体内设置一个Long(long)或者Integer(int)类型的乐观锁字段，并且数据库也设置一个数字类型的字段（需要有初始值或者默认值，不能为空）
 
