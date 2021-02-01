@@ -41,7 +41,7 @@ import static java.util.stream.Collectors.toList;
 @Intercepts(@Signature(type = ParameterHandler.class, method = "setParameters", args = {PreparedStatement.class}))
 public class LockerInterceptor implements Interceptor, ApplicationListener<ContextRefreshedEvent> {
 
-    private LockerProperties lockerProperties;
+    private final LockerProperties lockerProperties;
     private List<String> ids = new ArrayList<>();
     private Configuration config;
 
@@ -58,6 +58,7 @@ public class LockerInterceptor implements Interceptor, ApplicationListener<Conte
         updateSql();
     }
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
     public Object intercept(Invocation invocation) throws Throwable {
         DefaultParameterHandler ph = (DefaultParameterHandler) processTarget(invocation.getTarget());
@@ -70,16 +71,11 @@ public class LockerInterceptor implements Interceptor, ApplicationListener<Conte
 
         Object param = ph.getParameterObject();
         MetaObject mo = this.config.newMetaObject(param);
-        Object value = mo.getValue(lockerProperties.getVersionColumn());
+        long value = (long) mo.getValue(lockerProperties.getVersionColumn());
 
         ParameterMapping versionMapping = new ParameterMapping.Builder(this.config, lockerProperties.getVersionColumn(), Object.class).build();
         TypeHandler typeHandler = versionMapping.getTypeHandler();
-        JdbcType jdbcType = versionMapping.getJdbcType();
-
-        if (value == null && jdbcType == null) {
-            jdbcType = this.config.getJdbcTypeForNull();
-        }
-
+        JdbcType jdbcType = versionMapping.getJdbcType() == null ? this.config.getJdbcTypeForNull() : versionMapping.getJdbcType();
         List<ParameterMapping> pmList = (List<ParameterMapping>) this.config.newMetaObject(ms).getValue("sqlSource.sqlSource.parameterMappings");
         int versionLocation = pmList.size() + 1;
         try {
@@ -90,32 +86,28 @@ public class LockerInterceptor implements Interceptor, ApplicationListener<Conte
         }
 
         // increase version
-        mo.setValue(lockerProperties.getVersionColumn(), (long) value + 1);
+        mo.setValue(lockerProperties.getVersionColumn(), value + 1);
 
         return invocation.proceed();
     }
 
     private void updateSql() {
-        this.ids = parseAnno();
+        parseAnno();
         update();
     }
 
     private void update() {
         ofNullable(ids).orElseGet(ArrayList::new).stream().map(this.config::getMappedStatement).forEach(ms -> {
             MetaObject mo = this.config.newMetaObject(ms);
-
             String beforeSql = (String) mo.getValue("sqlSource.sqlSource.sql");
-            StringBuilder builder = new StringBuilder(beforeSql);
-            builder.append(" AND ");
-            builder.append(lockerProperties.getVersionColumn());
-            builder.append(" = ?");
-            mo.setValue("sqlSource.sqlSource.sql", builder.toString());
+            String builder = beforeSql + " AND " + lockerProperties.getVersionColumn() + " = ?";
+            mo.setValue("sqlSource.sqlSource.sql", builder);
         });
     }
 
-    private List<String> parseAnno() {
+    private void parseAnno() {
         Collection<Class<?>> mappers = this.config.getMapperRegistry().getMappers();
-        return ofNullable(mappers).orElseGet(ArrayList::new).stream()
+        this.ids = ofNullable(mappers).orElseGet(ArrayList::new).stream()
                 .flatMap(mapper -> stream(mapper.getDeclaredMethods())
                         .filter(method -> hasAnnotation(method, Locker.class))
                         .map(m -> mapper.getName() + "." + m.getName()))
