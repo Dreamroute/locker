@@ -24,7 +24,9 @@
 
 ----------
 ### 1. 使用方式：在mybatis配置文件中加入如下配置，就完成了。 ###
-##### 1.Spring Boot方式：引入`locker-spring-boot-starter`
+
+##### 1.Spring Boot方式：引入`locker-spring-boot-starter`即可完成插件的注册
+
 ##### 2.传统Spring MVC配置文件方式
 ```
 <plugins>
