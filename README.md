@@ -107,12 +107,7 @@ public interface UserMapper extends Mapper<User, Long> {
 
 ----------
 
-### 9.强烈推荐： ###
-	1.mybatis-spring，和spring整合，利用spring的各种优良机制；
-	2.通用Mapper和PageHelper物理分页插件，地址为：http://mybatis.tk，利用插件的单表CRUD动态创建能力；
-	3.集齐这4个mybatis插件，可以达到与Hibernate，JPA媲美的开发效率，但是性能又优于Hibernate；
-
-### 10.关于作者： ###
+### 9.关于作者： ###
 	QQ讨论群：170660681
 	作者QQ：342252328
 	作者邮箱：342252328@qq.com
