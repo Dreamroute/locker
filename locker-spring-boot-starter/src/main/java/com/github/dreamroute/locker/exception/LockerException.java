@@ -1,5 +1,10 @@
 package com.github.dreamroute.locker.exception;
 
+/**
+ * 异常
+ *
+ * @author w.dehi
+ */
 public class LockerException extends RuntimeException {
     /**
      * 

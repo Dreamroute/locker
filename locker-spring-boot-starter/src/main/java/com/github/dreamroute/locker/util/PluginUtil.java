@@ -34,6 +34,9 @@ import org.apache.ibatis.reflection.SystemMetaObject;
 
 import com.github.dreamroute.locker.exception.LockerException;
 
+/**
+ * @author w.dehai
+ */
 public final class PluginUtil {
 
     private static final Log log = LogFactory.getLog(PluginUtil.class);
