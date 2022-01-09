@@ -21,6 +21,15 @@ public interface UserMapper extends Mapper<User, Long> {
     long updateUu(User user);
 
     /**
+     * 这里并发更新，需要抛出{@link com.github.dreamroute.locker.exception.DataHasBeenModifyException}异常
+     * @param user
+     * @return
+     */
+    @Locker
+    @Update("update smart_user set name = #{name}, version = #{version} where id = #{id}")
+    long updateUuThrowException(User user);
+
+    /**
      * 不带乐观锁的方法
      *
      * @param user 参数

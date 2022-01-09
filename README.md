@@ -23,6 +23,10 @@
 	描述：本插件主要是为了解决MyBatis Generator自动生成的update标签不带乐观锁的问题，为开发带来比较简单优雅的实现方式。
 
 ----------
+### 0. 说明：
+1. 只对单条更新进行乐观锁动作，批量更新不支持；
+2. 只支持根据主键更新的操作进行乐观锁控制，`update xxx set name = 'a' where id = #{id}`
+
 ### 1. 使用方式：在mybatis配置文件中加入如下配置，就完成了。 ###
 
 ##### 1.Spring Boot方式：引入`locker-spring-boot-starter`即可完成插件的注册

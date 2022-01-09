@@ -4,8 +4,10 @@ import com.github.dreamroute.locker.sample.domain.User;
 import com.ninja_squad.dbsetup.DbSetup;
 import com.ninja_squad.dbsetup.destination.DataSourceDestination;
 import com.ninja_squad.dbsetup.operation.Insert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mybatis.spring.MyBatisSystemException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -13,7 +15,6 @@ import javax.sql.DataSource;
 
 import static com.ninja_squad.dbsetup.Operations.insertInto;
 import static com.ninja_squad.dbsetup.Operations.truncate;
-import static org.junit.Assert.assertEquals;
 
 @SpringBootTest
 class UserMapperTest {
@@ -37,13 +38,23 @@ class UserMapperTest {
     void updateUuTest() {
         User user = userMapper.selectById(100L);
         long result = userMapper.updateUu(user);
-        assertEquals(1, result);
+        Assertions.assertEquals(1, result);
+    }
+
+    @Test
+    void updateUuThrowExceptionTest() {
+        User user = userMapper.selectById(100L);
+        long result = userMapper.updateUu(user);
+        Assertions.assertEquals(1, result);
+        user.setVersion(100L);
+        Assertions.assertThrows(MyBatisSystemException.class, () -> userMapper.updateUuThrowException(user));
+
     }
 
     @Test
     void updateUu2Test() {
         User user = userMapper.selectById(100L);
         long result = userMapper.updateUu2(user);
-        assertEquals(1, result);
+        Assertions.assertEquals(1, result);
     }
 }

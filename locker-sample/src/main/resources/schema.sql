@@ -8,4 +8,3 @@ create table smart_user
     version              bigint not null,
     primary key (id)
 );
-insert into smart_user (id, name, password, version) values (100, 'root', '123456', 100);

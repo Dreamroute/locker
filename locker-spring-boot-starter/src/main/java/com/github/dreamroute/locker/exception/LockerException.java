@@ -6,10 +6,6 @@ package com.github.dreamroute.locker.exception;
  * @author w.dehi
  */
 public class LockerException extends RuntimeException {
-    /**
-     * 
-     */
-    private static final long serialVersionUID = -1458375495699446661L;
 
     public LockerException() {}
 

@@ -23,5 +23,8 @@ public class User {
 	private String password;
 	private Long version;
 
+	public void setVersion(Long version) {
+		this.version = version;
+	}
 
 }
