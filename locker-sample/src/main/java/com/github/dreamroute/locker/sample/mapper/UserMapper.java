@@ -14,20 +14,11 @@ public interface UserMapper extends Mapper<User, Long> {
      * 带有乐观锁的方法
      *
      * @param user 参数
-     * @return 返回修改成功条数
+     * @return 更新成功返回
      */
     @Locker
     @Update("update smart_user set name = #{name}, version = #{version} where id = #{id}")
-    long updateUu(User user);
-
-    /**
-     * 这里并发更新，需要抛出{@link com.github.dreamroute.locker.exception.DataHasBeenModifyException}异常
-     * @param user
-     * @return
-     */
-    @Locker
-    @Update("update smart_user set name = #{name}, version = #{version} where id = #{id}")
-    long updateUuThrowException(User user);
+    long updateUserWithLocker(User user);
 
     /**
      * 不带乐观锁的方法
@@ -36,6 +27,5 @@ public interface UserMapper extends Mapper<User, Long> {
      * @return 返回修改成功条数
      */
     @Update("update smart_user set name = #{name}, version = #{version} where id = #{id}")
-    long updateUu2(User user);
-
+    long updateUserNoLocker(User user);
 }

@@ -25,7 +25,8 @@
 ----------
 ### 0. 说明：
 1. 只对单条更新进行乐观锁动作，批量更新不支持；
-2. 只支持根据主键更新的操作进行乐观锁控制，`update xxx set name = 'a' where id = #{id}`
+2. 只支持根据主键更新的操作进行乐观锁控制，类似这样：`update xxx set name = 'a' where id = #{id}`
+3. 并发更新时，如果更新失败，那么根据配置`locker.fail-throw-exception=true/false`来决定是返回0还是抛出异常，默认是抛出异常
 
 ### 1. 使用方式：在mybatis配置文件中加入如下配置，就完成了。 ###
 
@@ -39,16 +40,31 @@
 ```
 ##### 3. 在mapper方法上加上`@Locker`注解，加了此注解插件才会拦截sql加入乐观锁，举例：
 ```
+/**
+ * @author w.dehai
+ */
 public interface UserMapper extends Mapper<User, Long> {
 
-	@Locker
-	@Update("update smart_user set name = #{name}, version = #{version} where id = #{id}")
-	long updateUu(User user);
+    /**
+     * 带有乐观锁的方法
+     *
+     * @param user 参数
+     * @return 返回修改成功条数
+     */
+    @Locker
+    @Update("update smart_user set name = #{name}, version = #{version} where id = #{id}")
+    long updateUserWithLocker(User user);
 
-	@Update("update smart_user set name = #{name}, version = #{version} where id = #{id}")
-	long updateUu2(User user);
-
+    /**
+     * 不带乐观锁的方法
+     *
+     * @param user 参数
+     * @return 返回修改成功条数
+     */
+    @Update("update smart_user set name = #{name}, version = #{version} where id = #{id}")
+    long updateUserNoLocker(User user);
 }
+
 
 ```
 > 注意：由于mybatis有多种参数形式，为了减小插件开发的复杂度，只兼容对象方式的参数，单个参数和Map类型不兼容
@@ -89,7 +105,7 @@ public interface UserMapper extends Mapper<User, Long> {
 ### 6.默认约定： ###
 	1、本插件拦截的update语句的Statement都是PreparedStatement，仅针对这种方式的sql有效；
 	2、mapper.xml的<update>标签必须要与接口Mapper的方法对应上，也就是使用mybatis推荐的方式，
-	   但是多个接口可以对应一个mapper.xml的<update>标签；
+	   但是多个接口可以对应一个mapper.xml的<update>标签，也支持接口上注解sql的方式；
 	3、本插件不会对sql的结果做任何操作，sql本身应该返回什么就是什么；
 	4、插件拦截sql的原理（这个1.x有本质的区别，1.x文档请查看wiki）：首先是拦截update类型的sql，第二是sql中存在乐观锁字段，
 	        比如update x set name = #{name}, version = #{version} where id = #{id}，

@@ -102,7 +102,7 @@ public class LockerInterceptor implements Interceptor, ApplicationListener<Conte
         Integer result = (Integer) invocation.proceed();
 
         // 如果返回值是0，说明没更新成功，那么判断是否是因为并发修改造成的，如果是并发修改，那么抛异常
-        if (Objects.equals(result, UPDATE_FAILD)) {
+        if (Objects.equals(result, UPDATE_FAILD) && lockerProperties.isFailThrowException()) {
             MappedStatement ms = (MappedStatement) invocation.getArgs()[0];
             String id = ms.getId();
             // 不需要乐观锁的方法，直接pass
