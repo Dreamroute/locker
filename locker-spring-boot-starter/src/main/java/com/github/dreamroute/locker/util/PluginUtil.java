@@ -23,8 +23,6 @@
  */
 package com.github.dreamroute.locker.util;
 
-import org.apache.ibatis.logging.Log;
-import org.apache.ibatis.logging.LogFactory;
 import org.apache.ibatis.reflection.MetaObject;
 import org.apache.ibatis.reflection.SystemMetaObject;
 
@@ -34,8 +32,6 @@ import java.lang.reflect.Proxy;
  * @author w.dehai
  */
 public final class PluginUtil {
-
-    private static final Log log = LogFactory.getLog(PluginUtil.class);
 
     private PluginUtil() {} // private constructor
 
