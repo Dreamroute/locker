@@ -28,6 +28,10 @@
 2. 只支持根据主键更新的操作进行乐观锁控制，类似这样：`update xxx set name = 'a' where id = #{id}`
 3. 并发更新时，如果更新失败，那么根据配置`locker.fail-throw-exception=true/false`来决定是返回0还是抛出异常，默认是抛出异常
 
+### 并发更新失败抛出异常说明：
+并发更新失败抛出的异常是`DataHasBeenModifyException`，但是由于插件抛出的异常会被mybatis包装成`MyBatisSystemException`，所以业务层只能catch到`MyBatisSystemException`异常，
+如果业务层需要获取`DataHasBeenModifyException`并且根据他来做一些特殊处理，可以在catch到`MyBatisSystemException`的时候，调用两次getCause()方法就能得到`DataHasBeenModifyException`
+
 ### 1. 使用方式：在mybatis配置文件中加入如下配置，就完成了。 ###
 
 ##### 1.Spring Boot方式：引入`locker-spring-boot-starter`即可完成插件的注册

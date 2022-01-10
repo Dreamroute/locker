@@ -1,6 +1,7 @@
 package com.github.dreamroute.locker.sample.mapper;
 
 import cn.hutool.core.util.ReflectUtil;
+import com.github.dreamroute.locker.exception.DataHasBeenModifyException;
 import com.github.dreamroute.locker.interceptor.LockerInterceptor;
 import com.github.dreamroute.locker.interceptor.LockerProperties;
 import com.github.dreamroute.locker.sample.domain.User;
@@ -62,7 +63,7 @@ class UserMapperTest {
     }
 
     /**
-     * 并发更新，第一条成功，第二条失败
+     * 并发更新
      */
     @Test
     void concurrentUpdateTest() {
@@ -72,13 +73,21 @@ class UserMapperTest {
                 .password("123456")
                 .version(100L).build();
 
-        // 第一次成功
+        // 成功
         assertEquals(1, userMapper.updateUserWithLocker(user));
 
-        // 第二次抛出异常
+        // 抛出异常
         assertThrows(MyBatisSystemException.class, () -> userMapper.updateUserWithLocker(user));
 
-        // 第三次，手动将failThrowException设置成false，更新失败返回0
+        // 抛出异常，获取真实异常
+        try {
+            userMapper.updateUserWithLocker(user);
+        } catch (MyBatisSystemException e) {
+            Throwable cause = e.getCause().getCause();
+            assertEquals(DataHasBeenModifyException.class, cause.getClass());
+        }
+
+        // 手动将failThrowException设置成false，更新失败返回0
         LockerProperties properties = new LockerProperties();
         // 原始值
         boolean failThrowException = properties.isFailThrowException();
