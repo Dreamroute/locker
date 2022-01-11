@@ -130,7 +130,7 @@ public class LockerInterceptor implements Interceptor, ApplicationListener<Conte
             // 凡是使用config.newXxx的和自己使用newXxx的，区别在于前者 会被插件拦截，而后者不会
             // 说明：这里不能使用上方的ms而是新创建ms使用特殊id，是因为如果使用上方的ms，那么就ms的id就是update的id，在此插件的缓存中，设置参数的时候会报错，而这里根本不需要执行下方的setParameters方法
             // 如果新建ms的话，id不在缓存中，就不需要执行setParameters方法
-            MappedStatement m = new Builder(config, "com.optimistic_locker_update_faild._inner_select", new StaticSqlSource(config, sql), SqlCommandType.SELECT).build();
+            MappedStatement m = new Builder(config, "com.[plugin]optimistic_locker_update_faild._inner_select", new StaticSqlSource(config, sql), SqlCommandType.SELECT).build();
             StatementHandler sh = config.newStatementHandler(executor, m, value, RowBounds.DEFAULT, null, select);
             Statement selectStmt = prepareStatement(transaction, sh);
             ((PreparedStatement) selectStmt).execute();
