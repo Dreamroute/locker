@@ -11,13 +11,13 @@
         <version>2.3.2.RELEASE</version>
     </parent>
 
-    <groupId>com.github.dreamroute</groupId>
+    <groupId>io.github.moriyasujapan</groupId>
     <artifactId>locker</artifactId>
     <version>${revision}</version>
     <packaging>pom</packaging>
 
     <name>locker</name>
-    <url>https://github.com/Dreamroute/locker</url>
+    <url>https://github.com/moriyasujapan/locker</url>
     <description>MyBatis Optimistic Locker Plugin</description>
     <licenses>
         <license>
@@ -27,8 +27,8 @@
     </licenses>
     <developers>
         <developer>
-            <name>w.dehai</name>
-            <email>342252328@qq.com</email>
+            <name>moriyasujapan</name>
+            <email></email>
         </developer>
     </developers>
     <scm>
@@ -39,7 +39,7 @@
 
     <properties>
         <!-- 版本信息 -->
-        <revision>3.1-RELEASE</revision>
+        <revision>1.0.0-RELEASE</revision>
 
         <!-- 编码相关 -->
         <java.version>1.8</java.version>
@@ -140,6 +140,7 @@
                 <executions>
                     <execution>
                         <id>attach-sources</id>
+                        <phase>verify</phase>
                         <goals>
                             <goal>jar-no-fork</goal>
                         </goals>
@@ -170,7 +171,7 @@
                 </executions>
             </plugin>
 
-            <plugin>
+            <!-- plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-gpg-plugin</artifactId>
                 <version>1.6</version>
@@ -183,7 +184,7 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>
+            </plugin-->
 
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>

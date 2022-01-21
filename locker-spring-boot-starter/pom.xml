@@ -1,45 +1,143 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>com.github.dreamroute</groupId>
-        <artifactId>locker</artifactId>
-        <version>${revision}</version>
-    </parent>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
 
-    <artifactId>locker-spring-boot-starter</artifactId>
+	<groupId>io.github.moriyasujapan</groupId>
+	<artifactId>locker-spring-boot-starter</artifactId>
+	<version>${revision}</version>
 
-    <name>locker</name>
-    <url>https://github.com/Dreamroute/${project.name}</url>
-    <scm>
-        <connection>${project.url}</connection>
-        <developerConnection>${project.url}</developerConnection>
-        <url>${project.url}</url>
-    </scm>
+	<name>locker</name>
+	<url>https://github.com/moriyasujapan/${project.name}</url>
+	<scm>
+		<connection>${project.url}</connection>
+		<developerConnection>${project.url}</developerConnection>
+		<url>${project.url}</url>
+	</scm>
+	<properties>
+		<!-- 版本信息 -->
+		<revision>1.0.0-RELEASE</revision>
 
-    <build>
-        <plugins>
+		<!-- 编码相关 -->
+		<java.version>1.8</java.version>
+		<maven.compiler.target>${java.version}</maven.compiler.target>
+		<maven.compiler.source>${java.version}</maven.compiler.source>
+		<maven.compiler.compilerVersion>${java.version}</maven.compiler.compilerVersion>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>${project.build.sourceEncoding}</project.reporting.outputEncoding>
+
+		<!-- 第三方工具 -->
+		<guava.version>30.1-jre</guava.version>
+		<fastjson.version>1.2.75</fastjson.version>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.mybatis</groupId>
+			<artifactId>mybatis</artifactId>
+			<version>3.5.6</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+			<version>2.3.2.RELEASE</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-configuration-processor</artifactId>
+			<version>2.3.2.RELEASE</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<version>1.18.12</version>
+		</dependency>
+
+		<dependency>
+			<groupId>cn.hutool</groupId>
+			<artifactId>hutool-all</artifactId>
+			<version>5.5.7</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>${guava.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.alibaba</groupId>
+			<artifactId>fastjson</artifactId>
+			<version>${fastjson.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.github.jsqlparser</groupId>
+			<artifactId>jsqlparser</artifactId>
+			<version>4.0</version>
+		</dependency>
+
+	</dependencies>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.sonatype.plugins</groupId>
+				<artifactId>nexus-staging-maven-plugin</artifactId>
+				<version>1.6.8</version>
+				<extensions>true</extensions>
+				<configuration>
+					<serverId>ossrh</serverId>
+					<nexusUrl>https://oss.sonatype.org</nexusUrl>
+					<autoReleaseAfterClose>true</autoReleaseAfterClose>
+				</configuration>
+			</plugin>
             <plugin>
-                <groupId>org.sonatype.plugins</groupId>
-                <artifactId>nexus-staging-maven-plugin</artifactId>
-                <version>1.6.8</version>
-                <extensions>true</extensions>
-                <configuration>
-                    <serverId>ossrh</serverId>
-                    <nexusUrl>https://oss.sonatype.org</nexusUrl>
-                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
-                </configuration>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>3.2.1</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-deploy-plugin</artifactId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.2.0</version>
                 <configuration>
-                    <skip>false</skip>
+                    <encoding>UTF-8</encoding>
+                    <charset>UTF-8</charset>
+                    <docencoding>UTF-8</docencoding>
                 </configuration>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <additionalOptions>-Xdoclint:none</additionalOptions>
+                            <encoding>UTF-8</encoding>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
-        </plugins>
-    </build>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-deploy-plugin</artifactId>
+				<version>1.6.8</version>
+				<configuration>
+					<skip>false</skip>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 
 </project>

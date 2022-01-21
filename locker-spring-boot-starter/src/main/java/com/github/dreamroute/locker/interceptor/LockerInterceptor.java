@@ -1,13 +1,23 @@
 package com.github.dreamroute.locker.interceptor;
 
-import cn.hutool.core.util.ReflectUtil;
-import com.github.dreamroute.locker.anno.Locker;
-import com.github.dreamroute.locker.exception.DataHasBeenModifyException;
-import lombok.extern.slf4j.Slf4j;
-import net.sf.jsqlparser.JSQLParserException;
-import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
-import net.sf.jsqlparser.parser.CCJSqlParserUtil;
-import net.sf.jsqlparser.statement.update.Update;
+import static cn.hutool.core.annotation.AnnotationUtil.hasAnnotation;
+import static com.github.dreamroute.locker.util.PluginUtil.processTarget;
+import static com.google.common.collect.Lists.newArrayList;
+import static java.util.Arrays.stream;
+import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.toList;
+import java.lang.reflect.InvocationTargetException;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.StringJoiner;
+import java.util.concurrent.ConcurrentHashMap;
 import org.apache.ibatis.builder.StaticSqlSource;
 import org.apache.ibatis.executor.Executor;
 import org.apache.ibatis.executor.parameter.ParameterHandler;
@@ -34,26 +44,15 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.util.StringUtils;
-
-import java.lang.reflect.InvocationTargetException;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.StringJoiner;
-import java.util.concurrent.ConcurrentHashMap;
-
-import static cn.hutool.core.annotation.AnnotationUtil.hasAnnotation;
-import static com.github.dreamroute.locker.util.PluginUtil.processTarget;
-import static com.google.common.collect.Lists.newArrayList;
-import static java.util.Arrays.stream;
-import static java.util.Optional.ofNullable;
-import static java.util.stream.Collectors.toList;
+import com.github.dreamroute.locker.anno.Locker;
+import com.github.dreamroute.locker.exception.DataHasBeenModifyException;
+import com.github.dreamroute.locker.util.Constent;
+import com.google.common.base.CaseFormat;
+import cn.hutool.core.util.ReflectUtil;
+import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.statement.update.Update;
 
 /**
  * 原理：
@@ -62,9 +61,11 @@ import static java.util.stream.Collectors.toList;
  * 3. 如果version > 当前值，那么就抛出异常；
  *
  * @author w.dehi
+ * 
+ * 版本字段的类型不再需要是 Long，支持 Integer 和 Short
+ * @author moriyasujapan
  */
-@Slf4j
-@EnableConfigurationProperties(LockerProperties.class)
+@EnableConfigurationProperties({LockerProperties.class, MybatisProperties.class})
 @Intercepts({
         @Signature(type = ParameterHandler.class, method = "setParameters", args = {PreparedStatement.class}),
         @Signature(type = Executor.class, method = "update", args = {MappedStatement.class, Object.class})
@@ -72,14 +73,17 @@ import static java.util.stream.Collectors.toList;
 public class LockerInterceptor implements Interceptor, ApplicationListener<ContextRefreshedEvent> {
 
     private final LockerProperties lockerProperties;
+    private final MybatisProperties mybatisProperties;
+
     private List<String> ids = new ArrayList<>();
     private final Map<String, String> selectMap = new ConcurrentHashMap<>();
     private Configuration config;
 
     private static final Integer UPDATE_FAILD = 0;
 
-    public LockerInterceptor(LockerProperties lockerProperties) {
+    public LockerInterceptor(LockerProperties lockerProperties, MybatisProperties mybatisProperties) {
         this.lockerProperties = lockerProperties;
+        this.mybatisProperties = mybatisProperties;
     }
 
     @Override
@@ -118,7 +122,10 @@ public class LockerInterceptor implements Interceptor, ApplicationListener<Conte
             String[] split = selectSql.split(":");
             String idName = split[1];
             String sql = split[0];
-
+            //将下划线映射为CamelCase的话，则将其转换
+            if (mybatisProperties.isMapUnderscodeToCamelCase()) {
+              idName = CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, idName);
+            }
             Executor executor = (Executor) (processTarget(invocation.getTarget()));
             Transaction transaction = executor.getTransaction();
             ParameterMapping pm = new ParameterMapping.Builder(config, idName, Object.class).build();
@@ -141,7 +148,17 @@ public class LockerInterceptor implements Interceptor, ApplicationListener<Conte
             }
             selectStmt.close();
 
-            long currentVersion = (long) ReflectUtil.getFieldValue(invocation.getArgs()[1], lockerProperties.getVersionColumn());
+            Long currentVersion = null;
+            Object cv = ReflectUtil.getFieldValue(invocation.getArgs()[1], lockerProperties.getVersionColumn());
+            if (Objects.equals(cv.getClass(), Long.class) || Objects.equals(cv.getClass(), long.class)) {
+              currentVersion = (long)cv;
+            } else if(Objects.equals(cv.getClass(), Integer.class) || Objects.equals(cv.getClass(), int.class)) {
+              currentVersion = Long.valueOf(String.valueOf(cv));
+            } else if(Objects.equals(cv.getClass(), Short.class) || Objects.equals(cv.getClass(), short.class)) {
+              currentVersion = Long.valueOf(String.valueOf(cv));
+            } else {
+              throw new TypeException(Constent.LOG_PREFIX + "property type error, the type of version is "+cv.getClass().getName()+"the type of version property must be Long or long or Integer or int or Short or short.");
+            }
             if (v != null && v > currentVersion) {
                 throw new DataHasBeenModifyException("data has been modify");
             }
@@ -182,7 +199,21 @@ public class LockerInterceptor implements Interceptor, ApplicationListener<Conte
 
         Object param = ph.getParameterObject();
         MetaObject mo = this.config.newMetaObject(param);
-        long value = (long) mo.getValue(lockerProperties.getVersionColumn());
+        Object v = mo.getValue(lockerProperties.getVersionColumn());
+        Long value = Long.MIN_VALUE;
+        Object incrementedValue = null;
+        if (Objects.equals(v.getClass(), Long.class) || Objects.equals(v.getClass(), long.class)) {
+          value = (long) v;
+          incrementedValue = value + 1;
+        } else if(Objects.equals(v.getClass(), Integer.class) || Objects.equals(v.getClass(), int.class)) {
+          value = Long.valueOf(String.valueOf((int) v));
+          incrementedValue = Integer.valueOf(String.valueOf(value + 1));
+        } else if(Objects.equals(v.getClass(), Short.class) || Objects.equals(v.getClass(), short.class)) {
+          value = Long.valueOf(String.valueOf((short) v));
+          incrementedValue = Short.valueOf(String.valueOf(value + 1));
+        } else {
+          throw new TypeException(Constent.LOG_PREFIX + "property type error, the type of version is "+v.getClass().getName()+"the type of version property must be Long or long or Integer or int or Short or short.");
+        }
 
         ParameterMapping versionMapping = new ParameterMapping.Builder(this.config, lockerProperties.getVersionColumn(), Object.class).build();
         TypeHandler typeHandler = versionMapping.getTypeHandler();
@@ -200,7 +231,8 @@ public class LockerInterceptor implements Interceptor, ApplicationListener<Conte
         Object original = mo.getValue(lockerProperties.getVersionColumn());
 
         // 自增
-        mo.setValue(lockerProperties.getVersionColumn(), value + 1);
+        mo.setValue(lockerProperties.getVersionColumn(), incrementedValue);
+
         Object result = invocation.proceed();
 
         // 还原
