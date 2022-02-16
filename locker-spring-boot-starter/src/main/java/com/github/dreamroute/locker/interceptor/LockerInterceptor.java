@@ -111,8 +111,9 @@ public class LockerInterceptor implements Interceptor, ApplicationListener<Conte
             }
 
             String selectSql = selectMap.get(id);
+            Object arg = invocation.getArgs()[1];
             if (StringUtils.isEmpty(selectSql)) {
-                selectSql = createSelect(ms);
+                selectSql = createSelect(ms, arg);
                 selectMap.put(id, selectSql);
             }
             String[] split = selectSql.split(":");
@@ -124,9 +125,9 @@ public class LockerInterceptor implements Interceptor, ApplicationListener<Conte
             ParameterMapping pm = new ParameterMapping.Builder(config, idName, Object.class).build();
             List<ParameterMapping> parameterMappings = newArrayList(pm);
 
-            Object arg = invocation.getArgs()[1];
             Object value = ReflectUtil.getFieldValue(arg, idName);
             BoundSql select = new BoundSql(config, sql, parameterMappings, value);
+            copyProps(ms.getBoundSql(arg), select, config);
             // 凡是使用config.newXxx的和自己使用newXxx的，区别在于前者 会被插件拦截，而后者不会
             // 说明：这里不能使用上方的ms而是新创建ms使用特殊id，是因为如果使用上方的ms，那么就ms的id就是update的id，在此插件的缓存中，设置参数的时候会报错，而这里根本不需要执行下方的setParameters方法
             // 如果新建ms的话，id不在缓存中，就不需要执行setParameters方法
@@ -141,7 +142,7 @@ public class LockerInterceptor implements Interceptor, ApplicationListener<Conte
             }
             selectStmt.close();
 
-            long currentVersion = (long) ReflectUtil.getFieldValue(invocation.getArgs()[1], lockerProperties.getVersionColumn());
+            long currentVersion = (long) ReflectUtil.getFieldValue(arg, lockerProperties.getVersionColumn());
             if (v != null && v > currentVersion) {
                 throw new DataHasBeenModifyException("data has been modify");
             }
@@ -155,8 +156,8 @@ public class LockerInterceptor implements Interceptor, ApplicationListener<Conte
         return stmt;
     }
 
-    private String createSelect(MappedStatement ms) throws JSQLParserException {
-        String sql = ms.getSqlSource().getBoundSql(null).getSql();
+    private String createSelect(MappedStatement ms, Object arg) throws JSQLParserException {
+        String sql = ms.getSqlSource().getBoundSql(arg).getSql();
         Update update = (Update) CCJSqlParserUtil.parse(sql);
         String tableName = update.getTable().getName();
         AndExpression ae = (AndExpression) update.getWhere();
@@ -229,5 +230,19 @@ public class LockerInterceptor implements Interceptor, ApplicationListener<Conte
                         .filter(method -> hasAnnotation(method, Locker.class))
                         .map(m -> mapper.getName() + "." + m.getName()))
                 .collect(toList());
+    }
+
+    /**
+     * 复制两个属性到新的BoundSql中，否则对于特殊参数的处理会报错，比如where xx in ()这种的。
+     * 原因是：创建MappedStatement的时候参数全部使用的是StaticSqlSource类型的SqlSource，而真实的情况是不一定全都是StaticSqlSource
+     */
+    private static void copyProps(BoundSql oldBs, BoundSql newBs, Configuration config) {
+        MetaObject oldMo = config.newMetaObject(oldBs);
+        Object ap = oldMo.getValue("additionalParameters");
+        Object mp = oldMo.getValue("metaParameters");
+
+        MetaObject newMo = config.newMetaObject(newBs);
+        newMo.setValue("additionalParameters", ap);
+        newMo.setValue("metaParameters", mp);
     }
 }
