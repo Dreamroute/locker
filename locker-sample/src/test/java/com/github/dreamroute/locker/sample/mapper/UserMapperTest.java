@@ -98,4 +98,17 @@ class UserMapperTest {
         properties.setFailThrowException(failThrowException);
     }
 
+    /**
+     * sql中带有动态标签<set>
+     */
+    @Test
+    void updateUserByDynamicTagWithLockerTest() {
+        User user = new User();
+        user.setId(100);
+        user.setPassword("pw");
+        user.setVersion(100L);
+        long result = userMapper.updateUserByDynamicTagWithLocker(user);
+        assertEquals(1L, result);
+    }
+
 }

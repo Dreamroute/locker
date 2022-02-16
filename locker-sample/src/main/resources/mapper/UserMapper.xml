@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper
-		PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-		"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.github.dreamroute.locker.sample.mapper.UserMapper">
+    <update id="updateUserByDynamicTagWithLocker" parameterType="com.github.dreamroute.locker.sample.domain.User">
+        update smart_user
+        <set>
+            <if test="name != null and name != ''">name = #{name}</if>,
+            <if test="password != null and password != ''">password = #{password}</if>,
+            <if test="version != null and version != ''">version = #{version}</if>
+        </set>
+        where id = #{id}
+    </update>
 </mapper>
