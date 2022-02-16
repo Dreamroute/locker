@@ -77,8 +77,6 @@ public class LockerInterceptor implements Interceptor, ApplicationListener<Conte
 
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
-        // 将此方法移动到Spring容器初始化之后执行的原因是：如果放在下方的intercept方法中来执行，
-        // 那么就会有并发问题（获取ms的sqlSource然后修改sqlSource），那么就需要对该方法加锁，影响性能
         SqlSessionFactory sqlSessionFactory = event.getApplicationContext().getBean(SqlSessionFactory.class);
         this.config = sqlSessionFactory.getConfiguration();
         Collection<Class<?>> mappers = this.config.getMapperRegistry().getMappers();
@@ -142,7 +140,6 @@ public class LockerInterceptor implements Interceptor, ApplicationListener<Conte
 
             Object value = ReflectUtil.getFieldValue(param, idName);
             BoundSql select = new BoundSql(config, sql, parameterMappings, value);
-            copyProps(ms.getBoundSql(param), select, config);
             MappedStatement selectMs = new Builder(config, "com.[plugin]optimistic_locker_update_faild._inner_select", new StaticSqlSource(config, sql), SqlCommandType.SELECT).build();
             StatementHandler selectSh = config.newStatementHandler(executor, selectMs, value, RowBounds.DEFAULT, null, select);
             Statement selectStmt = prepareStatement(executor.getTransaction(), selectSh);
@@ -179,19 +176,5 @@ public class LockerInterceptor implements Interceptor, ApplicationListener<Conte
         String selectSql = joiner.add("SELECT").add(lockerProperties.getVersionColumn()).add("FROM").add(tableName).add("WHERE").add(et.toString()).toString();
 
         return selectSql + ":" + id;
-    }
-
-    /**
-     * 复制两个属性到新的BoundSql中，否则对于特殊参数的处理会报错，比如where xx in ()这种的。
-     * 原因是：创建MappedStatement的时候参数全部使用的是StaticSqlSource类型的SqlSource，而真实的情况是不一定全都是StaticSqlSource
-     */
-    private static void copyProps(BoundSql oldBs, BoundSql newBs, Configuration config) {
-        MetaObject oldMo = config.newMetaObject(oldBs);
-        Object ap = oldMo.getValue("additionalParameters");
-        Object mp = oldMo.getValue("metaParameters");
-
-        MetaObject newMo = config.newMetaObject(newBs);
-        newMo.setValue("additionalParameters", ap);
-        newMo.setValue("metaParameters", mp);
     }
 }
