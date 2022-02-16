@@ -2,13 +2,13 @@ package com.github.dreamroute.locker.sample.mapper;
 
 import com.github.dreamroute.locker.anno.Locker;
 import com.github.dreamroute.locker.sample.domain.User;
-import com.github.dreamroute.mybatis.pro.service.mapper.Mapper;
+import com.github.dreamroute.mybatis.pro.service.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Update;
 
 /**
  * @author w.dehai
  */
-public interface UserMapper extends Mapper<User, Long> {
+public interface UserMapper extends BaseMapper<User, Long> {
 
     /**
      * 带有乐观锁的方法
