@@ -39,7 +39,7 @@
 
     <properties>
         <!-- 版本信息 -->
-        <revision>3.2-RELEASE</revision>
+        <revision>3.3-RELEASE</revision>
 
         <!-- 编码相关 -->
         <java.version>1.8</java.version>

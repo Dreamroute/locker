@@ -103,12 +103,35 @@ class UserMapperTest {
      */
     @Test
     void updateUserByDynamicTagWithLockerTest() {
-        User user = new User();
-        user.setId(100);
-        user.setPassword("pw");
-        user.setVersion(100L);
-        long result = userMapper.updateUserByDynamicTagWithLocker(user);
-        assertEquals(1L, result);
+        User user = User.builder()
+                .id(100)
+                .name("w.dehai")
+                .password("123456")
+                .version(100L).build();
+
+        // 成功
+        assertEquals(1, userMapper.updateUserByDynamicTagWithLocker(user));
+
+        // 抛出异常
+        assertThrows(MyBatisSystemException.class, () -> userMapper.updateUserByDynamicTagWithLocker(user));
+
+        // 抛出异常，获取真实异常
+        try {
+            userMapper.updateUserByDynamicTagWithLocker(user);
+        } catch (MyBatisSystemException e) {
+            Throwable cause = e.getCause().getCause();
+            assertEquals(DataHasBeenModifyException.class, cause.getClass());
+        }
+
+        // 手动将failThrowException设置成false，更新失败返回0
+        LockerProperties properties = new LockerProperties();
+        // 原始值
+        boolean failThrowException = properties.isFailThrowException();
+        properties.setFailThrowException(false);
+        ReflectUtil.setFieldValue(interceptor, "lockerProperties", properties);
+        assertEquals(0, userMapper.updateUserByDynamicTagWithLocker(user));
+        // 将原始值设置回去，避免影响其他测试方法
+        properties.setFailThrowException(failThrowException);
     }
 
 }

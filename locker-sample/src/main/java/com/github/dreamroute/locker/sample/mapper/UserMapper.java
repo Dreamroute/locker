@@ -20,6 +20,9 @@ public interface UserMapper extends Mapper<User, Long> {
     @Update("update smart_user set name = #{name}, version = #{version} where id = #{id}")
     long updateUserWithLocker(User user);
 
+    /**
+     * 带有动态标签
+     */
     @Locker
     long updateUserByDynamicTagWithLocker(User user);
 
