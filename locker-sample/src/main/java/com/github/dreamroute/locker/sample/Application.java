@@ -1,6 +1,5 @@
 package com.github.dreamroute.locker.sample;
 
-import com.github.dreamroute.locker.anno.EnableLocker;
 import com.github.dreamroute.sqlprinter.starter.anno.EnableSQLPrinter;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
@@ -9,7 +8,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 /**
  * @author w.dehai
  */
-@EnableLocker
 @EnableSQLPrinter
 @SpringBootApplication
 @MapperScan("com.github.dreamroute.locker.sample.mapper")

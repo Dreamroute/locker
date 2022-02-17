@@ -1,5 +1,6 @@
 package com.github.dreamroute.locker.sample.mapper;
 
+import com.github.dreamroute.locker.anno.EnableLocker;
 import com.github.dreamroute.locker.sample.domain.User;
 import com.ninja_squad.dbsetup.DbSetup;
 import com.ninja_squad.dbsetup.destination.DataSourceDestination;
@@ -7,7 +8,6 @@ import com.ninja_squad.dbsetup.operation.Insert;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.annotation.Resource;
@@ -16,6 +16,7 @@ import javax.sql.DataSource;
 import static com.ninja_squad.dbsetup.Operations.insertInto;
 import static com.ninja_squad.dbsetup.Operations.truncate;
 
+@EnableLocker
 @SpringBootTest
 class UserMapperWithoutLockerTest {
 

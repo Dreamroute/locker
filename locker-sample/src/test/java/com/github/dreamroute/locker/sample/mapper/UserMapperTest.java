@@ -1,6 +1,7 @@
 package com.github.dreamroute.locker.sample.mapper;
 
 import cn.hutool.core.util.ReflectUtil;
+import com.github.dreamroute.locker.anno.EnableLocker;
 import com.github.dreamroute.locker.exception.DataHasBeenModifyException;
 import com.github.dreamroute.locker.interceptor.LockerInterceptor;
 import com.github.dreamroute.locker.sample.domain.User;
@@ -21,6 +22,7 @@ import static com.ninja_squad.dbsetup.Operations.truncate;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+@EnableLocker
 @SpringBootTest
 class UserMapperTest {
 
