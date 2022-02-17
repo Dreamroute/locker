@@ -26,15 +26,20 @@
 ### 0. 说明：
 1. 只对单条更新进行乐观锁动作，批量更新不支持；
 2. 只支持根据主键更新的操作进行乐观锁控制，类似这样：`update xxx set name = 'a' where id = #{id}`
-3. 并发更新时，如果更新失败，那么根据配置`locker.fail-throw-exception=true/false`来决定是返回0还是抛出异常，默认是抛出异常
+3. 并发更新时，如果更新失败，那么根据配置`@EnableLocker(failThrowException = true/false)`来决定是返回0还是抛出异常，默认是抛出异常
 
-### 并发更新失败抛出异常说明：
+### 1. 并发更新失败抛出异常说明：
 并发更新失败抛出的异常是`DataHasBeenModifyException`，但是由于插件抛出的异常会被mybatis包装成`MyBatisSystemException`，所以业务层只能catch到`MyBatisSystemException`异常，
 如果业务层需要获取`DataHasBeenModifyException`并且根据他来做一些特殊处理，可以在catch到`MyBatisSystemException`的时候，调用两次getCause()方法就能得到`DataHasBeenModifyException`
 
-### 1. 使用方式：在mybatis配置文件中加入如下配置，就完成了。 ###
+### 1. 使用方式：在项目中引入上方`maven`依赖
 
-##### 1.Spring Boot方式：引入`locker-spring-boot-starter`即可完成插件的注册
+##### 1.Spring Boot方式
+1. 引入`locker-spring-boot-starter`依赖，
+2. 在启动类上标记`@EnableLocker`
+3. `@EnableLocker`的属性: 
+   1. `versionColumn`: 乐观锁列名，默认`version`
+   2. `failThrowException`: 更新失败时的动作，默认是true（抛出异常），false（返回0）
 
 ##### 2.传统Spring MVC配置文件方式
 ```

@@ -3,7 +3,6 @@ package com.github.dreamroute.locker.sample.mapper;
 import cn.hutool.core.util.ReflectUtil;
 import com.github.dreamroute.locker.exception.DataHasBeenModifyException;
 import com.github.dreamroute.locker.interceptor.LockerInterceptor;
-import com.github.dreamroute.locker.interceptor.LockerProperties;
 import com.github.dreamroute.locker.sample.domain.User;
 import com.ninja_squad.dbsetup.DbSetup;
 import com.ninja_squad.dbsetup.destination.DataSourceDestination;
@@ -12,9 +11,9 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mybatis.spring.MyBatisSystemException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import javax.annotation.Resource;
 import javax.sql.DataSource;
 
 import static com.ninja_squad.dbsetup.Operations.insertInto;
@@ -25,11 +24,11 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @SpringBootTest
 class UserMapperTest {
 
-    @Autowired
+    @Resource
     private UserMapper userMapper;
-    @Autowired
+    @Resource
     private DataSource dataSource;
-    @Autowired
+    @Resource
     private LockerInterceptor interceptor;
 
     @BeforeEach
@@ -88,14 +87,12 @@ class UserMapperTest {
         }
 
         // 手动将failThrowException设置成false，更新失败返回0
-        LockerProperties properties = new LockerProperties();
         // 原始值
-        boolean failThrowException = properties.isFailThrowException();
-        properties.setFailThrowException(false);
-        ReflectUtil.setFieldValue(interceptor, "lockerProperties", properties);
+        boolean failThrowException = (boolean) ReflectUtil.getFieldValue(interceptor, "failThrowException");
+        ReflectUtil.setFieldValue(interceptor, "failThrowException", false);
         assertEquals(0, userMapper.updateUserWithLocker(user));
         // 将原始值设置回去，避免影响其他测试方法
-        properties.setFailThrowException(failThrowException);
+        ReflectUtil.setFieldValue(interceptor, "failThrowException", failThrowException);
     }
 
     /**
@@ -124,14 +121,12 @@ class UserMapperTest {
         }
 
         // 手动将failThrowException设置成false，更新失败返回0
-        LockerProperties properties = new LockerProperties();
         // 原始值
-        boolean failThrowException = properties.isFailThrowException();
-        properties.setFailThrowException(false);
-        ReflectUtil.setFieldValue(interceptor, "lockerProperties", properties);
+        boolean failThrowException = (boolean) ReflectUtil.getFieldValue(interceptor, "failThrowException");
+        ReflectUtil.setFieldValue(interceptor, "failThrowException", false);
         assertEquals(0, userMapper.updateUserByDynamicTagWithLocker(user));
         // 将原始值设置回去，避免影响其他测试方法
-        properties.setFailThrowException(failThrowException);
+        ReflectUtil.setFieldValue(interceptor, "failThrowException", failThrowException);
     }
 
 }

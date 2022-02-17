@@ -26,7 +26,6 @@ import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.RowBounds;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.transaction.Transaction;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.util.StringUtils;
@@ -59,21 +58,23 @@ import static java.util.stream.Collectors.toList;
  * @author w.dehi
  */
 @Slf4j
-@EnableConfigurationProperties(LockerProperties.class)
 @Intercepts({
         @Signature(type = Executor.class, method = "update", args = {MappedStatement.class, Object.class})
 })
 public class LockerInterceptor implements Interceptor, ApplicationListener<ContextRefreshedEvent> {
 
-    private final LockerProperties lockerProperties;
+    private final String versionColumn;
+    private final boolean failThrowException;
+
     private List<String> ids = new ArrayList<>();
     private final Map<String, String> selectMap = new ConcurrentHashMap<>();
     private Configuration config;
 
     private static final Integer UPDATE_FAILD = 0;
 
-    public LockerInterceptor(LockerProperties lockerProperties) {
-        this.lockerProperties = lockerProperties;
+    public LockerInterceptor(String versionColumn, boolean failThrowException) {
+        this.versionColumn = versionColumn;
+        this.failThrowException = failThrowException;
     }
 
     @Override
@@ -102,18 +103,18 @@ public class LockerInterceptor implements Interceptor, ApplicationListener<Conte
 
         // 1. 执行更新操作
         MetaObject pmmo = config.newMetaObject(param);
-        Long versionValue = (Long) pmmo.getValue(lockerProperties.getVersionColumn());
-        pmmo.setValue(lockerProperties.getVersionColumn(), versionValue + 1);
+        Long versionValue = (Long) pmmo.getValue(versionColumn);
+        pmmo.setValue(versionColumn, versionValue + 1);
 
         Executor executor = (Executor) PluginUtil.processTarget(invocation.getTarget());
         BoundSql boundSql = ms.getBoundSql(param);
-        ParameterMapping vpm = new ParameterMapping.Builder(config, lockerProperties.getVersionColumn() + "_v", Object.class).build();
+        ParameterMapping vpm = new ParameterMapping.Builder(config, versionColumn + "_v", Object.class).build();
         List<ParameterMapping> pms = newArrayList(boundSql.getParameterMappings());
         pms.add(vpm);
         String old = boundSql.getSql();
-        String newSql = old + " AND " + lockerProperties.getVersionColumn() + " = ?";
+        String newSql = old + " AND " + versionColumn + " = ?";
         BoundSql newBoundSql = new BoundSql(config, newSql, pms, param);
-        newBoundSql.setAdditionalParameter(lockerProperties.getVersionColumn() + "_v", versionValue);
+        newBoundSql.setAdditionalParameter(versionColumn + "_v", versionValue);
 
         MappedStatement m = new Builder(config, "com.[plugin]optimistic_locker_update_with_locker._inner_update", new StaticSqlSource(config, newSql), SqlCommandType.UPDATE).build();
         StatementHandler sh = config.newStatementHandler(executor, m, param, RowBounds.DEFAULT, null, newBoundSql);
@@ -121,10 +122,10 @@ public class LockerInterceptor implements Interceptor, ApplicationListener<Conte
         ((PreparedStatement) updateStmt).execute();
         int result = updateStmt.getUpdateCount();
         updateStmt.close();
-        pmmo.setValue(lockerProperties.getVersionColumn(), versionValue);
+        pmmo.setValue(versionColumn, versionValue);
 
         // 2. 如果返回值是0，说明没更新成功，那么判断是否是因为并发修改造成的，如果是并发修改，那么抛异常
-        if (Objects.equals(result, UPDATE_FAILD) && lockerProperties.isFailThrowException()) {
+        if (Objects.equals(result, UPDATE_FAILD) && failThrowException) {
 
             String selectSql = selectMap.get(id);
             if (StringUtils.isEmpty(selectSql)) {
@@ -147,11 +148,11 @@ public class LockerInterceptor implements Interceptor, ApplicationListener<Conte
             ResultSet rs = selectStmt.getResultSet();
             Long v = null;
             while (rs.next()) {
-                v = rs.getLong(lockerProperties.getVersionColumn());
+                v = rs.getLong(versionColumn);
             }
             updateStmt.close();
 
-            long currentVersion = (long) ReflectUtil.getFieldValue(param, lockerProperties.getVersionColumn());
+            long currentVersion = (long) ReflectUtil.getFieldValue(param, versionColumn);
             if (v != null && v > currentVersion) {
                 throw new DataHasBeenModifyException("data has been modify");
             }
@@ -173,7 +174,7 @@ public class LockerInterceptor implements Interceptor, ApplicationListener<Conte
         String id = et.getLeftExpression().toString();
 
         StringJoiner joiner = new StringJoiner(" ");
-        String selectSql = joiner.add("SELECT").add(lockerProperties.getVersionColumn()).add("FROM").add(tableName).add("WHERE").add(et.toString()).toString();
+        String selectSql = joiner.add("SELECT").add(versionColumn).add("FROM").add(tableName).add("WHERE").add(et.toString()).toString();
 
         return selectSql + ":" + id;
     }
