@@ -25,8 +25,13 @@ package com.github.dreamroute.locker.util;
 
 import org.apache.ibatis.reflection.MetaObject;
 import org.apache.ibatis.reflection.SystemMetaObject;
+import org.springframework.util.ObjectUtils;
 
+import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author w.dehai
@@ -52,6 +57,29 @@ public final class PluginUtil {
             return processTarget(mo.getValue("h.target"));
         }
         return target;
+    }
+
+    /**
+     * 获取cls所有方法，包括父接口的方法
+     */
+    public static Method[] getAllMethods(Class<?> cls) {
+        Set<Class<?>> all = getAllParentInterface(cls);
+        all.add(cls);
+        return all.stream().flatMap(c -> Arrays.stream(c.getDeclaredMethods())).toArray(Method[]::new);
+    }
+
+    public static Set<Class<?>> getAllParentInterface(Class<?> cls) {
+        Set<Class<?>> result = new HashSet<>();
+        recursiveCls(cls, result);
+        return result;
+    }
+
+    private static void recursiveCls(Class<?> cls, Set<Class<?>> result) {
+        Class<?>[] interfaces = cls.getInterfaces();
+        if (!ObjectUtils.isEmpty(interfaces)) {
+            result.addAll(Arrays.asList(interfaces));
+            Arrays.stream(interfaces).forEach(inter -> recursiveCls(inter, result));
+        }
     }
 
 }

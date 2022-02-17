@@ -44,6 +44,7 @@ import java.util.StringJoiner;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static cn.hutool.core.annotation.AnnotationUtil.hasAnnotation;
+import static com.github.dreamroute.locker.util.PluginUtil.getAllMethods;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Arrays.stream;
 import static java.util.Optional.ofNullable;
@@ -81,12 +82,11 @@ public class LockerInterceptor implements Interceptor, ApplicationListener<Conte
         this.config = sqlSessionFactory.getConfiguration();
         Collection<Class<?>> mappers = this.config.getMapperRegistry().getMappers();
         this.ids = ofNullable(mappers).orElseGet(ArrayList::new).stream()
-                .flatMap(mapper -> stream(mapper.getDeclaredMethods())
+                .flatMap(mapper -> stream(getAllMethods(mapper))
                         .filter(method -> hasAnnotation(method, Locker.class))
                         .map(m -> mapper.getName() + "." + m.getName()))
                 .collect(toList());
     }
-
 
     @Override
     public Object intercept(Invocation invocation) throws Throwable {
