@@ -14,7 +14,7 @@
 <dependency>
     <groupId>com.github.dreamroute</groupId>
     <artifactId>locker-spring-boot-starter</artifactId>
-    <version>3.3-RELEASE</version>
+    <version>lastest version</version>
 </dependency>
 ```
 最新版本：[点击查看](https://search.maven.org/artifact/com.github.dreamroute/locker-spring-boot-starter)
