@@ -10,11 +10,11 @@
 ## Document: ##
 
 ### Get Start...
-```
+```xml
 <dependency>
     <groupId>com.github.dreamroute</groupId>
     <artifactId>locker-spring-boot-starter</artifactId>
-    <version>3.3-RELEASE</version>
+    <version>lastest version</version>
 </dependency>
 ```
 最新版本：[点击查看](https://search.maven.org/artifact/com.github.dreamroute/locker-spring-boot-starter)
@@ -42,13 +42,13 @@
    2. `failThrowException`: 更新失败时的动作，默认是true（抛出异常），false（返回0）
 
 ##### 2.传统Spring MVC配置文件方式
-```
+```xml
 <plugins>
     <plugin interceptor="com.github.dreamroute.locker.interceptor.LockerInterceptor" />
 </plugins>
 ```
 ##### 3. 在mapper方法上加上`@Locker`注解，加了此注解插件才会拦截sql加入乐观锁，举例：
-```
+```java
 /**
  * @author w.dehai
  */
