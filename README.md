@@ -87,12 +87,6 @@ public interface UserMapper extends Mapper<User, Long> {
 
 ----------
 
-### 2. 对插件配置的说明： ###
-	
-上面对插件的配置默认数据库的乐观锁列对应的Java属性为version。这里可以自定义属性名，例如：
-在Spring Boot应用中，可以在application.properties中配置`locker.version-column=你的列名`，默认`version`
-----------
-
 ### 3. 效果： ###
 > 之前：**update user set name = ?, password = ?, version = ? where id = ?**
 
