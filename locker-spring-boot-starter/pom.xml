@@ -118,52 +118,6 @@
     <build>
         <plugins>
 
-            <!-- lombok拷贝文件 -->
-            <plugin>
-                <groupId>org.projectlombok</groupId>
-                <artifactId>lombok-maven-plugin</artifactId>
-                <version>${lombok-maven-plugin.version}</version>
-                <executions>
-                    <execution>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>delombok</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <skip>false</skip>
-                    <sourceDirectory>src/main/java</sourceDirectory>
-                    <outputDirectory>${project.build.directory}/delombok</outputDirectory>
-                    <addOutputDirectory>false</addOutputDirectory>
-                    <encoding>UTF-8</encoding>
-                </configuration>
-            </plugin>
-
-            <!-- resource复制到lombok包下 -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-resources-plugin</artifactId>
-                <version>${maven-resources-plugin.version}</version>
-                <executions>
-                    <execution>
-                        <id>copy-to-lombok-dir</id>
-                        <phase>process-sources</phase>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <configuration>
-                            <resources>
-                                <resource>
-                                    <directory>${project.basedir}/src/main/resources</directory>
-                                </resource>
-                            </resources>
-                            <outputDirectory>${project.build.directory}/delombok</outputDirectory>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
             <!-- 源码打包start -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -179,28 +133,6 @@
                         <goals>
                             <goal>jar-no-fork</goal>
                         </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <version>${maven-antrun-plugin.version}</version>
-                <executions>
-                    <execution>
-                        <id>generate-delomboked-sources-jar</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <target>
-                                <jar destfile="${project.build.directory}/${project.build.finalName}-sources.jar"
-                                     basedir="${project.build.directory}/delombok"/>
-                            </target>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>
