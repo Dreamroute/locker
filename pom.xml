@@ -36,7 +36,7 @@
 
         <!-- 第三方工具 -->
         <mybatis.version>3.5.6</mybatis.version>
-        <guava.version>31.0.1-jre</guava.version>
+        <guava.version>32.0.0-jre</guava.version>
         <fastjson.version>1.2.78</fastjson.version>
         <jsqlparser.version>4.0</jsqlparser.version>
         <hutool-all.version>5.7.13</hutool-all.version>
