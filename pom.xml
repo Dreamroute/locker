@@ -16,7 +16,7 @@
 
     <properties>
         <!-- 版本信息 -->
-        <revision>3.6-RELEASE</revision>
+        <revision>3.6.1-RELEASE</revision>
 
         <!-- 默认仓库地址 -->
         <repository.url>https://maven.aliyun.com/repository/public</repository.url>

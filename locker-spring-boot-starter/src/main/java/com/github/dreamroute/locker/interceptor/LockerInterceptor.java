@@ -6,8 +6,13 @@ import com.github.dreamroute.locker.exception.DataHasBeenModifyException;
 import com.github.dreamroute.locker.util.PluginUtil;
 import lombok.extern.slf4j.Slf4j;
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.JdbcParameter;
+import net.sf.jsqlparser.expression.Parenthesis;
+import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.update.Update;
 import org.apache.ibatis.builder.StaticSqlSource;
 import org.apache.ibatis.executor.Executor;
@@ -112,7 +117,16 @@ public class LockerInterceptor implements Interceptor, ApplicationListener<Conte
         List<ParameterMapping> pms = newArrayList(boundSql.getParameterMappings());
         pms.add(vpm);
         String old = boundSql.getSql();
-        String newSql = old + " AND " + versionColumn + " = ?";
+
+        // 获取新的sql
+        Update update = (Update) CCJSqlParserUtil.parse(old);
+        Expression where = update.getWhere();
+        Parenthesis p = new Parenthesis(where);
+        EqualsTo lock = new EqualsTo(new Column(versionColumn), new JdbcParameter());
+        AndExpression newWhere = new AndExpression().withLeftExpression(p).withRightExpression(lock);
+        update.setWhere(newWhere);
+        String newSql = update.toString();
+
         BoundSql newBoundSql = new BoundSql(config, newSql, pms, param);
         newBoundSql.setAdditionalParameter(versionColumn + "_v", versionValue);
 
