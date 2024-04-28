@@ -16,10 +16,11 @@
 
     <properties>
         <!-- 版本信息 -->
-        <revision>3.6.1-RELEASE</revision>
+        <revision>3.6.2-RELEASE</revision>
 
         <!-- 默认仓库地址 -->
-        <repository.url>https://maven.aliyun.com/repository/public</repository.url>
+        <repository.nexus.url>https://maven.aliyun.com/repository/public</repository.nexus.url>
+        <repository.oss.url>https://maven.aliyun.com/repository/public</repository.oss.url>
         <dist.nexus.release>http://nexus.yzw.cn/repository/maven-releases</dist.nexus.release>
         <dist.nexus.snapshot>http://nexus.yzw.cn/repository/maven-snapshots</dist.nexus.snapshot>
         <dist.oss.release>https://oss.sonatype.org/content/repositories/snapshots</dist.oss.release>
@@ -54,33 +55,89 @@
         <nexus-staging-maven-plugin.version>1.6.8</nexus-staging-maven-plugin.version>
     </properties>
 
-    <!-- 仓库地址 -->
-    <repositories>
-        <repository>
+    <profiles>
+        <profile>
             <id>nexus</id>
-            <url>${repository.url}</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-                <updatePolicy>always</updatePolicy>
-            </snapshots>
-        </repository>
-    </repositories>
-    <pluginRepositories>
-        <pluginRepository>
-            <id>nexus</id>
-            <url>${repository.url}</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-                <updatePolicy>always</updatePolicy>
-            </snapshots>
-        </pluginRepository>
-    </pluginRepositories>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <repositories>
+                <repository>
+                    <id>nexus</id>
+                    <url>${repository.nexus.url}</url>
+                    <releases>
+                        <enabled>true</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>true</enabled>
+                        <updatePolicy>always</updatePolicy>
+                    </snapshots>
+                </repository>
+            </repositories>
+            <pluginRepositories>
+                <pluginRepository>
+                    <id>nexus</id>
+                    <url>${repository.nexus.url}</url>
+                    <releases>
+                        <enabled>true</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>true</enabled>
+                        <updatePolicy>always</updatePolicy>
+                    </snapshots>
+                </pluginRepository>
+            </pluginRepositories>
+            <distributionManagement>
+                <repository>
+                    <id>nexus</id>
+                    <url>${dist.nexus.release}</url>
+                </repository>
+                <snapshotRepository>
+                    <id>nexus</id>
+                    <url>${dist.nexus.snapshot}</url>
+                </snapshotRepository>
+            </distributionManagement>
+        </profile>
+        <profile>
+            <id>oss</id>
+            <repositories>
+                <repository>
+                    <id>nexus</id>
+                    <url>${repository.oss.url}</url>
+                    <releases>
+                        <enabled>true</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>true</enabled>
+                        <updatePolicy>always</updatePolicy>
+                    </snapshots>
+                </repository>
+            </repositories>
+            <pluginRepositories>
+                <pluginRepository>
+                    <id>nexus</id>
+                    <url>${repository.oss.url}</url>
+                    <releases>
+                        <enabled>true</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>true</enabled>
+                        <updatePolicy>always</updatePolicy>
+                    </snapshots>
+                </pluginRepository>
+            </pluginRepositories>
+            <distributionManagement>
+                <repository>
+                    <id>oss</id>
+                    <url>${dist.oss.release}</url>
+                </repository>
+                <snapshotRepository>
+                    <id>oss</id>
+                    <url>${dist.oss.snapshot}</url>
+                </snapshotRepository>
+            </distributionManagement>
+        </profile>
+    </profiles>
 
     <dependencyManagement>
         <dependencies>
